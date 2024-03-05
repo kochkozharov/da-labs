@@ -1,10 +1,8 @@
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
 #include <limits>
-#include <utility>
 
 #pragma region vector
 template <class T>
@@ -92,7 +90,7 @@ class TVector {
 };
 #pragma endregion vector
 
-#pragma region key value pair
+#pragma region key-value pair
 
 class TKeyValuePair {
    private:
@@ -131,7 +129,7 @@ class TKeyValuePair {
     }
 };
 
-#pragma endregion string
+#pragma endregion key-value pair
 
 #pragma region sort
 

@@ -99,6 +99,10 @@ class TKeyValuePair {
     char value[SIZE]{};
 
    public:
+    TKeyValuePair() {}
+    TKeyValuePair(double key, const char* c_str) : key(key) {
+        strcpy(value, c_str);
+    }
     void Print(FILE* stream) { std::fprintf(stream, "%lf\t%s\n", key, value); }
     bool Scan(FILE* stream) {
         if (fscanf(stream, "%lf ", &key) == 1 &&
@@ -129,7 +133,7 @@ class TKeyValuePair {
     }
 };
 
-#pragma endregion key-value pair
+#pragma endregion key - value pair
 
 #pragma region sort
 
@@ -175,9 +179,8 @@ void Merge(TVector<T>& arr, TVector<T>& buf, std::size_t left, std::size_t mid,
 }
 
 template <class T>
-void MergeSort(TVector<T>& arr) {
+void MergeSort(TVector<T>& arr, TVector<T>& buf) {
     std::size_t count = arr.Size();
-    TVector<T> buf(count);
     for (size_t i = 1; i < count; i *= 2) {
         for (size_t j = 0; j < count - i; j += 2 * i) {
             Merge(arr, buf, j, j + i, std::min(j + 2 * i, count));
@@ -200,8 +203,9 @@ void BucketSort(TVector<TKeyValuePair>& vector, int numBuckets) {
         }
         buckets[idx].PushBack(vector[i]);
     }
+    TVector<TKeyValuePair> buf(vector.Size());
     for (int i = 0; i < numBuckets; ++i) {
-        MergeSort(buckets[i]);
+        MergeSort(buckets[i], buf);
     }
     std::size_t cnt = 0;
     for (int i = 0; i < numBuckets; ++i) {
@@ -213,18 +217,3 @@ void BucketSort(TVector<TKeyValuePair>& vector, int numBuckets) {
 }
 
 #pragma endregion sort
-
-#pragma region main
-int main() {
-    TVector<TKeyValuePair> arr;
-    TKeyValuePair pair;
-    while (pair.Scan(stdin)) {
-        arr.PushBack(pair);
-    }
-    const int numBuckets = 100000;
-    BucketSort(arr, numBuckets);
-    for (std::size_t i = 0; i < arr.Size(); ++i) {
-        arr[i].Print(stdout);
-    }
-}
-#pragma endregion main

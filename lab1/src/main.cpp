@@ -7,7 +7,7 @@ int main() {
     while (pair.Scan(stdin)) {
         arr.PushBack(pair);
     }
-    const int numBuckets = 2000;
+    const size_t numBuckets = 2000;
     BucketSort(arr, numBuckets);
     for (std::size_t i = 0; i < arr.Size(); ++i) {
         arr[i].Print(stdout);

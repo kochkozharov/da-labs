@@ -188,27 +188,21 @@ void MergeSort(TVector<T>& arr, TVector<T>& buf) {
     }
 }
 
-void BucketSort(TVector<TKeyValuePair>& vector, int numBuckets) {
+void BucketSort(TVector<TKeyValuePair>& vector, size_t numBuckets) {
     const double minElement = -100;
     const double maxElement = 100;
     const double range = maxElement - minElement;
     TVector<TVector<TKeyValuePair>> buckets(numBuckets);
     for (std::size_t i = 0; i < vector.Size(); ++i) {
         std::size_t idx;
-        if (vector[i].Key() == maxElement) {
-            idx = numBuckets - 1;
-        } else {
             idx =
-                std::floor((vector[i].Key() - minElement) * numBuckets / range);
-        }
+                (vector[i].Key() - minElement) * numBuckets / range;
         buckets[idx].PushBack(vector[i]);
     }
     TVector<TKeyValuePair> buf(vector.Size());
-    for (int i = 0; i < numBuckets; ++i) {
-        MergeSort(buckets[i], buf);
-    }
     std::size_t cnt = 0;
-    for (int i = 0; i < numBuckets; ++i) {
+    for (size_t i = 0; i < numBuckets; ++i) {
+        MergeSort(buckets[i], buf);
         for (std::size_t j = 0; j < buckets[i].Size(); ++j) {
             vector[cnt] = buckets[i][j];
             ++cnt;

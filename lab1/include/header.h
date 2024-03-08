@@ -115,7 +115,7 @@ void Merge(TVector<T>& arr, TVector<T>& buf, std::size_t left, std::size_t mid,
     std::size_t it1 = 0;
     std::size_t it2 = 0;
     while (left + it1 < mid && mid + it2 < right) {
-        if (arr[left + it1] >= arr[mid + it2]) {
+        if (arr[left + it1] <= arr[mid + it2]) {
             buf[it1 + it2] = std::move(arr[left + it1]);
             it1 += 1;
         } else {

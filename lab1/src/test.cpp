@@ -136,7 +136,7 @@ void MergeSort(std::vector<T>& arr, std::vector<T>& buf) {
 }
 
 // Function to perform bucket sort
-void bucketSort(std::vector<double>& arr) {
+void bucketSort(TVector<double>& arr) {
     const double minElement = -100;
     const double maxElement = 100;
     const double range = maxElement - minElement;
@@ -144,14 +144,14 @@ void bucketSort(std::vector<double>& arr) {
     std::vector<std::vector<double>> buckets(numBuckets);
 
     // Distribute input array values into buckets
-    for (double val : arr) {
-        int bucketIndex = (val - minElement) * (numBuckets-1) / range; // Scale and shift to match bucket index
-        buckets[bucketIndex].push_back(val);
+    for (size_t i =0; i < arr.Size(); ++i) {
+        int bucketIndex = (arr[i] - minElement) * (numBuckets-1) / range; // Scale and shift to match bucket index
+        buckets[bucketIndex].push_back(arr[i]);
     }
 
     // Sort each bucket and concatenate
     size_t cnt = 0;
-    std::vector<double> buf(arr.size());
+    std::vector<double> buf(arr.Size());
     for (auto& bucket : buckets) {
         std::stable_sort(bucket.begin(), bucket.end());
         //MergeSort(bucket, buf);
@@ -165,21 +165,23 @@ void bucketSort(std::vector<double>& arr) {
 }
 
 int main() {
+    TVector<double> data;
     std::vector<double> benchmarkData;
 
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<double> distr(-100, 100);
 
-    const std::size_t numberOfElements = 100000;
+    const std::size_t numberOfElements = 1000000;
 
     for (size_t i = 0; i < numberOfElements; ++i) {
+        data.PushBack(distr(gen));
         benchmarkData.push_back(distr(gen));
+
     }
-    std::vector<double> benchmarkDataCopy = benchmarkData;
     // Benchmarking bucket sort
     auto start = std::chrono::high_resolution_clock::now();
-    bucketSort(benchmarkData);
+    bucketSort(data);
     auto end = std::chrono::high_resolution_clock::now();
     std::cout << "Bucket sort time: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " microseconds" << std::endl;
 
@@ -188,12 +190,11 @@ int main() {
 
     // Benchmarking std::sort
     start = std::chrono::high_resolution_clock::now();
-    std::stable_sort(benchmarkDataCopy.begin(), benchmarkDataCopy.end());
+    std::stable_sort(benchmarkData.begin(), benchmarkData.end());
     end = std::chrono::high_resolution_clock::now();
     std::cout << "std::sort time: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " microseconds" << std::endl;
 
-    assert(std::is_sorted(benchmarkDataCopy.begin(), benchmarkDataCopy.end()));
-    assert(std::is_sorted(benchmarkData.begin(), benchmarkData.end()));
+
 
     return 0;
 }

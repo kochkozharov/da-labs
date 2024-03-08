@@ -16,15 +16,14 @@ int main() {
     std::mt19937 gen(rd());
     std::uniform_real_distribution<double> distr(-100, 100);
 
-    std::size_t numberOfElements = 10000;
+    std::size_t numberOfElements = 1000000;
     for (size_t i = 0; i < numberOfElements; ++i) {
         auto pair = TKeyValuePair(distr(gen), "test");
         data.PushBack(pair);
         benchmarkData.push_back(pair);
     }
-    const size_t numBuckets = 10000;
     auto start1 = std::chrono::high_resolution_clock::now();
-    BucketSort(data, numBuckets);
+    BucketSort(data);
     auto finish1 = std::chrono::high_resolution_clock::now();
 
     auto cmp = [](const TKeyValuePair& a, const TKeyValuePair& b) {

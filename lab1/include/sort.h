@@ -21,16 +21,22 @@ class TVector {
     }
 
    public:
+
+    void Reserve(std::size_t newCapacity) {
+        if (newCapacity < size) {
+            return;
+        }
+        T* newArray = new T[newCapacity];
+        for (size_t k = 0; k < size; ++k) newArray[k] = std::move(data[k]);
+
+        capacity = newCapacity;
+        std::swap(data, newArray);
+        delete[] newArray;
+    }
+
     void PushBack(const T& value) {
         if (capacity == size) {
-            const std::size_t newCapacity{NewCapacity(capacity)};
-            T* newData{new T[newCapacity]};
-            for (std::size_t i = 0; i < capacity; ++i) {
-                newData[i] = std::move(data[i]);
-            }
-            capacity = newCapacity;
-            std::swap(newData, data);
-            delete[] newData;
+            Reserve(NewCapacity(capacity));
         }
         data[size++] = value;
     }
@@ -188,15 +194,15 @@ void MergeSort(TVector<T>& arr, TVector<T>& buf) {
     }
 }
 
-void BucketSort(TVector<TKeyValuePair>& vector, size_t numBuckets) {
+void BucketSort(TVector<TKeyValuePair>& vector) {
     const double minElement = -100;
     const double maxElement = 100;
     const double range = maxElement - minElement;
+    const size_t numBuckets = range;
     TVector<TVector<TKeyValuePair>> buckets(numBuckets);
     for (std::size_t i = 0; i < vector.Size(); ++i) {
         std::size_t idx;
-            idx =
-                (vector[i].Key() - minElement) * numBuckets / range;
+        idx = (vector[i].Key() - minElement) * numBuckets / range;
         buckets[idx].PushBack(vector[i]);
     }
     TVector<TKeyValuePair> buf(vector.Size());

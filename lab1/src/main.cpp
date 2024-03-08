@@ -1,6 +1,5 @@
 #include "header.h"
 
-#pragma region main
 int main() {
     TVector<TKeyValuePair> arr;
     TKeyValuePair pair;
@@ -12,4 +11,3 @@ int main() {
         arr[i].Print(stdout);
     }
 }
-#pragma endregion main

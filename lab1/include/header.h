@@ -2,7 +2,12 @@
 #include <utility>
 #include <cstdio>
 #include <limits>
-#include <algorithm>
+
+template<class T>
+const T& min(const T& a, const T& b)
+{
+    return (b < a) ? b : a;
+}
 
 template <class T>
 class TVector {
@@ -140,7 +145,7 @@ void MergeSort(TVector<T>& arr, TVector<T>& buf) {
     std::size_t count = arr.Size();
     for (size_t i = 1; i < count; i *= 2) {
         for (size_t j = 0; j < count - i; j += 2 * i) {
-            Merge(arr, buf, j, j + i, std::min(j + 2 * i, count));
+            Merge(arr, buf, j, j + i, min(j + 2 * i, count));
         }
     }
 }

@@ -220,7 +220,7 @@ void BucketSort(TVector<TKeyValuePair>& arr) {
     const int minElement = -100;
     const int maxElement = 100;
     const int range = maxElement - minElement;
-    const size_t numBuckets = range;
+    const size_t numBuckets = range*2;
     TVector<TVector<TKeyValuePair>> buckets(numBuckets);
     for (size_t i = 0; i < arr.Size(); ++i) {
         int bucketIndex = (arr[i].key - minElement) * (numBuckets - 1) / range;

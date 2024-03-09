@@ -137,67 +137,70 @@ void BucketSort(TVector<TKeyValuePair>& arr) {
 \begin{center}
 \begin{tabular}{ |c|c|c|c| }
     \hline
-    Количество пар "ключ-значение" & BucketSort(), мс & std::stable\_sort(), мс  \\
+    Количество пар "ключ-значение" & BucketSort(), мс & MergeSort(), мс  \\
     \hline
-    100000 & 24874 & 31686   \\
-    200000 & 51995 & 69242   \\
-    300000 & 88199 & 88199   \\
-    400000 & 104921 & 136714  \\
-    500000 & 144899 & 170380  \\
-    600000 & 184554 & 199280   \\
-    700000 & 182360 & 234054   \\
-    800000 & 227148 & 292439   \\
-    900000 & 269784 & 326355   \\
-    1000000 & 283568 & 398958  \\
-    5000000 & 1654703.84 & 2106763 \\
+    100000 & 32458 & 48899   \\
+    200000 & 104580 & 142907   \\
+    300000 & 212336 & 284310   \\
+    400000 & 371465 & 461866  \\
+    500000 & 535948 & 693257  \\
+    600000 & 798625 & 1016245   \\
+    700000 & 1025358 & 1328589   \\
+    800000 & 1533539 & 1783103   \\
+    900000 & 1692229 & 2142605   \\
+    1000000 & 2043095 & 2654381  \\
 
 
     \hline
     \end{tabular}
 \end{center}
 
-Карманная сортировка работает быстрее std::stable\_sort, и на больших объемах данных время ее работы становится пропорциональным 
+Карманная сортировка работает быстрее MergeSort, и на больших объемах данных время ее работы становится пропорциональным 
 количеству данных.
 
 Ниже приведена программа benchmark.cpp, использовавшаяся для засечения времени работы функций:
 \begin{lstlisting}[language=C++]
+#include <chrono>
 #include <iostream>
 #include <random>
-#include <chrono>
 
 #include "header.h"
 
 int main() {
     TVector<TKeyValuePair> data;
-    std::vector<TKeyValuePair> benchmarkData;
+    TVector<TKeyValuePair> data2;
 
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<double> distr(-100, 100);
+    for (size_t i = 100000; i <= 1000000; i+=100000) {
+        const size_t numberOfElements = i;
+        std::cout << numberOfElements << '\n';
+        for (size_t i = 0; i < numberOfElements; ++i) {
+            data.PushBack(TKeyValuePair(distr(gen), "test"));
+            data2.PushBack(TKeyValuePair(distr(gen), "test"));
+        }
 
-    const std::size_t numberOfElements = 100000;
+        auto start = std::chrono::high_resolution_clock::now();
+        BucketSort(data);
+        auto end = std::chrono::high_resolution_clock::now();
+        std::cout << "Bucket sort time: "
+                    << std::chrono::duration_cast<std::chrono::microseconds>(
+                            end - start)
+                            .count()
+                    << " microseconds" << std::endl;
 
-    for (size_t i = 0; i < numberOfElements; ++i) {
-        data.PushBack(TKeyValuePair(distr(gen), "test"));
-        benchmarkData.emplace_back(distr(gen), "test");
+        // Benchmarking std::sort
+        TVector<TKeyValuePair> buf(data2.Size());
+        start = std::chrono::high_resolution_clock::now();
+        MergeSort(data2, buf);
+        end = std::chrono::high_resolution_clock::now();
+        std::cout << "merge sort: "
+                    << std::chrono::duration_cast<std::chrono::microseconds>(
+                            end - start)
+                            .count()
+                    << " microseconds" << std::endl;
     }
-    // Benchmarking bucket sort
-    auto start = std::chrono::high_resolution_clock::now();
-    BucketSort(data);
-    auto end = std::chrono::high_resolution_clock::now();
-    std::cout << "Bucket sort time: "
-    << std::chrono::duration_cast<std::chrono::microseconds>(end - start)
-                     .count()
-              << " microseconds" << std::endl;
-
-    // Benchmarking std::sort
-    start = std::chrono::high_resolution_clock::now();
-    std::stable_sort(benchmarkData.begin(), benchmarkData.end());
-    end = std::chrono::high_resolution_clock::now();
-    std::cout << "std::stable_sort time: "
-    << std::chrono::duration_cast<std::chrono::microseconds>(end - start)
-                     .count()
-              << " microseconds" << std::endl;
 
     return 0;
 }

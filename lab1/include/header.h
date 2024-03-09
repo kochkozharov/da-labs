@@ -163,7 +163,7 @@ class TKeyValuePair {
     double key;
     TFixedSizeLine* value;
     TKeyValuePair() : value(nullptr) {}
-    TKeyValuePair(int key, const char* value)
+    TKeyValuePair(double key, const char* value)
         : key(key), value(new TFixedSizeLine(value)) {}
     TKeyValuePair(const TKeyValuePair& other) : key(other.key) {
         value = new TFixedSizeLine();

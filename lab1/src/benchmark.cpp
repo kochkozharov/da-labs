@@ -12,7 +12,8 @@ int main() {
     std::mt19937 gen(rd());
     std::uniform_real_distribution<double> distr(-100, 100);
 
-    const std::size_t numberOfElements = 100000;
+
+    const std::size_t numberOfElements =100000;
 
     for (size_t i = 0; i < numberOfElements; ++i) {
         data.PushBack(TKeyValuePair(distr(gen), "test"));
@@ -39,4 +40,5 @@ int main() {
               << " microseconds" << std::endl;
 
     return 0;
+    }
 }

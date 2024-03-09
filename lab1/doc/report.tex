@@ -16,7 +16,7 @@
 
 \subsection*{Условие}
 
-Кратко описывается задача:
+Краткое описание задачи:
 \begin{enumerate}
 \item
     Требуется разработать программу, осуществляющую ввод пар "ключ-значение", сортировку по возрастанию ключа указанным алгоритмом сортировки за линейное время и вывод получившейся последовательности.
@@ -79,7 +79,7 @@ class TVector {
             };
         \end{lstlisting}
     \item
-        Структура TKeyValuePair. Необходим для хранения пар "ключ-значение".
+     Структура TKeyValuePair. Необходима для хранения пар "ключ-значение".
         \begin{lstlisting}[language=C++]
 struct TFixedSizeLine {
     inline static const int SIZE = 64;
@@ -135,7 +135,7 @@ void BucketSort(TVector<TKeyValuePair>& arr) {
 \subsection*{Дневник отладки}
 
 Изначально в качестве вспомгательного алгоритма использовалась сортировка вставками, но только после замены ее на сортировку слиянием решения стало проходить чекер.
-Так же сильно улучшило производительность хранение строки из 64 символов не в самом элементе вектора, а в куче. После такого сортировка стала обгонять std::stable\_sort.
+Так же сильно улучшило производительность хранение строки из 64 символов не в самом элементе вектора, а в куче. 
 
 \subsection*{Тест производительности}
 
@@ -198,8 +198,7 @@ int main() {
     BucketSort(data);
     auto end = std::chrono::high_resolution_clock::now();
     std::cout << "Bucket sort time: "
-              << std::chrono::duration_cast<std::chrono::microseconds>(end -
-                                                                       start)
+    << std::chrono::duration_cast<std::chrono::microseconds>(end - start)
                      .count()
               << " microseconds" << std::endl;
 
@@ -208,8 +207,7 @@ int main() {
     std::stable_sort(benchmarkData.begin(), benchmarkData.end());
     end = std::chrono::high_resolution_clock::now();
     std::cout << "std::stable_sort time: "
-              << std::chrono::duration_cast<std::chrono::microseconds>(end -
-                                                                       start)
+    << std::chrono::duration_cast<std::chrono::microseconds>(end - start)
                      .count()
               << " microseconds" << std::endl;
 

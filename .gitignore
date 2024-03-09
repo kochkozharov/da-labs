@@ -1,2 +1,9 @@
 .vscode
 build
+
+*.aux
+*.log
+*.fls
+*.fdb_latexmk
+*.toc
+*.synctex.gz

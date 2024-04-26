@@ -1,76 +1,79 @@
 #include <iostream>
 #include <string>
 #include "patricia.h"
+#include <cinttypes>
 
 int main() {
-    std::string input;
-    TPatriciaTrie t;
-    while (std::cin >> input) {
+    CaseInsensitiveString input;
+    TPatriciaTrie trie;
+    while (input.Scan(stdin)) {
         if (input == "+") {
-            std::string key;
+            CaseInsensitiveString key;
             uint64_t value;
-            std::cin >> key >> value;
+            key.Scan(stdin);
+            scanf("%" SCNu64, &value);
+            //std::cin >> key >> value;
             try {
-                t.Insert({key, value});
+                trie.Insert({key, value});
             } catch (std::exception& e) {
-                std::cout << e.what() << std::endl;
+                std::cout << e.what() << '\n';
                 continue;
             }
         } else if (input == "-") {
-            std::string key;
-            std::cin >> key;
+            CaseInsensitiveString key;
+            key.Scan(stdin);
             try {
-                t.Erase(key);
+                trie.Erase(key);
             } catch (std::exception& e) {
-                std::cout << e.what() << std::endl;
+                std::cout << e.what() << '\n';
                 continue;
             }
         } else if (input == "!") {
-            std::string cmd;
-            std::cin >> cmd;
+            CaseInsensitiveString cmd;
+            cmd.Scan(stdin);
             if (cmd == "Save") {
-                std::string path;
-                std::cin >> path;
+                CaseInsensitiveString path;
+                path.Scan(stdin);
                 std::ofstream file;
                 try {
-                    file.open(path);
+                    file.open(path.CStr());
                 } catch (std::exception& e) {
-                    std::cout << "ERROR: " << e.what() << std::endl;
+                    std::cout << "ERROR: " << e.what() << '\n';
                 }
                 try {
-                    t.SaveToFile(file);
+                    trie.SaveToFile(file);
                 } catch (std::exception& e) {
-                    std::cout << e.what() << std::endl;
+                    std::cout << e.what() << '\n';
                 }
             } else if (cmd == "Load") {
-                std::string path;
-                std::cin >> path;
+                CaseInsensitiveString path;
+                path.Scan(stdin);
                 std::ifstream file;
                 try {
-                    file.open(path);
+                    file.open(path.CStr());
                 } catch (std::exception& e) {
-                    std::cout << "ERROR: " << e.what() << std::endl;
+                    std::cout << "ERROR: " << e.what() << '\n';
                 }
                 try {
-                    t.LoadFromFile(file);
+                    trie.LoadFromFile(file);
                 } catch (std::exception& e) {
-                    std::cout << e.what() << std::endl;
+                    std::cout << e.what() << '\n';
                 }
             }
-            std::cout << "OK" << std::endl;
+            std::cout << "OK" << '\n';
             continue;
         } else {
-            TPair<std::string, uint64_t> p;
+            TPair<CaseInsensitiveString, uint64_t> p;
             try {
-                p = t.Find(input);
+                p = trie.Find(input);
             } catch (std::exception& e) {
-                std::cout << e.what() << std::endl;
+                std::cout << e.what() << '\n';
                 continue;
             }
-            std::cout << "OK: " << p.value << std::endl;
+            std::cout << "OK: " << p.value << '\n';
             continue;
         }
-        std::cout << "OK" << std::endl;
+        std::cout << "OK" << '\n';
     }
 
     return 0;

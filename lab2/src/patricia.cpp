@@ -25,7 +25,7 @@ TPatriciaTrie::~TPatriciaTrie() {
 }
 
 // if bitNumber == -1, it just finds node by key as usual; otherwise, it finds a place for new node with bitNumber
-TPair<TPatriciaTrie::TNode*, int> TPatriciaTrie::FindPreviousNode(const std::string& key, int bitNumber) {
+TPair<TPatriciaTrie::TNode*, int> TPatriciaTrie::FindPreviousNode(const CaseInsensitiveString& key, int bitNumber) {
     if (root == nullptr) {
         return {root, -1};
     }
@@ -41,7 +41,7 @@ TPair<TPatriciaTrie::TNode*, int> TPatriciaTrie::FindPreviousNode(const std::str
 }
 
 // if bitNumber == -1, it just finds node by key as usual; otherwise, it finds a place for new node with bitNumber
-TPatriciaTrie::TNode*& TPatriciaTrie::FindNode(const std::string& key, int bitNumber) {
+TPatriciaTrie::TNode*& TPatriciaTrie::FindNode(const CaseInsensitiveString& key, int bitNumber) {
     TPair<TNode*, int> previous = FindPreviousNode(key, bitNumber);
     if (previous.key == nullptr) {
         return root;
@@ -73,7 +73,7 @@ void TPatriciaTrie::Insert(const TData& data) {
     ++size;
 }
 
-const TPatriciaTrie::TData& TPatriciaTrie::Find(const std::string& key) {
+const TPatriciaTrie::TData& TPatriciaTrie::Find(const CaseInsensitiveString& key) {
     TNode* found = FindNode(key, -1);
     if (found == nullptr || BitDifference(key, found->data.key) != -1) {
         throw std::logic_error("NoSuchWord");
@@ -81,7 +81,7 @@ const TPatriciaTrie::TData& TPatriciaTrie::Find(const std::string& key) {
     return found->data;
 }
 
-void TPatriciaTrie::Erase(const std::string& key) {
+void TPatriciaTrie::Erase(const CaseInsensitiveString& key) {
     TNode*& deleting = FindNode(key, -1);
     if (deleting == nullptr) {
         throw std::logic_error("NoSuchWord");
@@ -144,8 +144,8 @@ void TPatriciaTrie::SaveToFile(std::ofstream& file) const {
     for (int i = 0; i < size; ++i) {
         TSaveData data;
         data.id = i;
-        std::memcpy(data.key, nodes[i]->data.key.c_str(), sizeof(char) * KEY_LENGTH);
-        data.value = nodes[i]->data.value;
+        data.keyValue.key = nodes[i]->data.key;
+        data.keyValue.value = nodes[i]->data.value;
         data.bitNumber = nodes[i]->bitNumber;
         data.leftId = nodes[i]->children[0]->id;
         if (i == 0) {    // root
@@ -161,7 +161,7 @@ void TPatriciaTrie::ArrayToTree(TSaveData* array) {
     TNode* nodes[size];
     for (int i = 0; i < size; ++i) {
         nodes[i] = new TNode;
-        nodes[i]->data = {array[i].key, array[i].value};
+        nodes[i]->data = {array[i].keyValue.key, array[i].keyValue.value};
         nodes[i]->bitNumber = array[i].bitNumber;
     }
     for (int i = 0; i < size; ++i) {

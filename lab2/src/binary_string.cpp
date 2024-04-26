@@ -2,7 +2,7 @@
 #include <iostream>
 #include <cmath>
 
-int GetBitSize(const std::string& str) {
+int GetBitSize(const CaseInsensitiveString& str) {
     return str.size() * BYTE_SIZE;
 }
 
@@ -19,7 +19,7 @@ int GetBitDifferenceNumber(char a) {
     return BYTE_SIZE - bits - 1;
 }
 
-int BitDifference(const std::string& a, const std::string& b) {
+int BitDifference(const CaseInsensitiveString& a, const CaseInsensitiveString& b) {
     int sizeA = a.size();
     int sizeB = b.size();
     for (int i = 0; i < std::min(sizeA, sizeB); ++i) {
@@ -37,7 +37,7 @@ int BitDifference(const std::string& a, const std::string& b) {
     return GetBitDifferenceNumber(std::tolower(b[sizeA]) - 'a' + 1) + BYTE_SIZE * sizeA;
 }
 
-bool GetBitByIndex(const std::string& str, int index) {
+bool GetBitByIndex(const CaseInsensitiveString& str, int index) {
     if (index < 0) {
         throw std::out_of_range("index is out of range");
     }

@@ -26,7 +26,7 @@ int main() {
             {
                 start = std::chrono::system_clock::now();
                 try{
-                    t.Insert({key, value});
+                    t.Insert({key.c_str(), value});
                 } catch(std::exception &e) {}
                 end = std::chrono::system_clock::now();
                 bst_ts += std::chrono::duration_cast<duration_t>( end - start ).count();

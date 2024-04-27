@@ -24,7 +24,7 @@ struct CaseInsensitiveString {
     const char& operator[](int idx) const { return str[idx]; }
     int size() const { return sz; }
     bool Scan(FILE *stream) {
-        return fscanf(stream,"%256s", str) == EOF;
+        return fscanf(stream,"%256s", str) != EOF;
     }
     const char *CStr() const{
         return str;

@@ -1,39 +1,40 @@
-#include <iostream>
-#include <string>
+#include <cinttypes>
+
 #include "patricia.h"
 
 int main() {
-    std::string input;
+    CaseInsensitiveString input;
     TPatriciaTrie t;
-    while (std::cin >> input) {
+    while (input.Scan()) {
         if (input == "+") {
-            std::string key;
+            CaseInsensitiveString key;
             uint64_t value;
-            std::cin >> key >> value;
+            key.Scan();
+            scanf("%" SCNu64, &value);
             try {
-                t.Insert({key.c_str(), value});
+                t.Insert({key, value});
             } catch (std::exception& e) {
                 std::cout << e.what() << std::endl;
                 continue;
             }
         } else if (input == "-") {
-            std::string key;
-            std::cin >> key;
+            CaseInsensitiveString key;
+            key.Scan();
             try {
-                t.Erase(key.c_str());
+                t.Erase(key);
             } catch (std::exception& e) {
                 std::cout << e.what() << std::endl;
                 continue;
             }
         } else if (input == "!") {
-            std::string cmd;
-            std::cin >> cmd;
+            CaseInsensitiveString cmd;
+            cmd.Scan();
             if (cmd == "Save") {
-                std::string path;
-                std::cin >> path;
+                CaseInsensitiveString path;
+                path.Scan();
                 std::ofstream file;
                 try {
-                    file.open(path);
+                    file.open(path.CStr());
                 } catch (std::exception& e) {
                     std::cout << "ERROR: " << e.what() << std::endl;
                 }
@@ -43,11 +44,11 @@ int main() {
                     std::cout << e.what() << std::endl;
                 }
             } else if (cmd == "Load") {
-                std::string path;
-                std::cin >> path;
+                CaseInsensitiveString path;
+                path.Scan();
                 std::ifstream file;
                 try {
-                    file.open(path);
+                    file.open(path.CStr());
                 } catch (std::exception& e) {
                     std::cout << "ERROR: " << e.what() << std::endl;
                 }
@@ -62,7 +63,7 @@ int main() {
         } else {
             TPair<CaseInsensitiveString, uint64_t> p;
             try {
-                p = t.Find(input.c_str());
+                p = t.Find(input.CStr());
             } catch (std::exception& e) {
                 std::cout << e.what() << std::endl;
                 continue;

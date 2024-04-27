@@ -158,7 +158,7 @@ void TPatriciaTrie::SaveToFile(std::ofstream& file) const {
 }
 
 void TPatriciaTrie::ArrayToTree(TSaveData* array) {
-    TNode* nodes[size];
+    TNode* nodes[size]; //FIX
     for (int i = 0; i < size; ++i) {
         nodes[i] = new TNode;
         nodes[i]->data = {array[i].keyValue.key, array[i].keyValue.value};

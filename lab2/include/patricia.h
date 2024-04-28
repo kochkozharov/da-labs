@@ -6,6 +6,34 @@
 
 #include "binary_string.h"
 
+struct CFile {
+    enum class FileType { Save, Load };
+    FILE* file;
+    CaseInsensitiveString name;
+    CFile(CaseInsensitiveString s, FileType mode) {
+        name = s;
+        if (mode == FileType::Save) {
+            file = fopen(s.CStr(), "wb");
+        }
+        else {
+            file = fopen(s.CStr(), "rb");
+        }
+        if (file == nullptr) {
+            throw std::logic_error("Bad File");
+        }
+    }
+    FILE* GetFile() { return file; }
+    CFile() = delete;
+    CFile(const CFile& other) = delete;
+    CFile(CFile&& other) = delete;
+    CFile& operator=(const CFile& other) = delete;
+    CFile& operator=(CFile&& other) = delete;
+    ~CFile() {
+        fclose(file);
+        //remove(name.CStr());
+    }
+};
+
 template <class T, class U>
 struct TPair {
     T key;
@@ -69,7 +97,7 @@ class TPatriciaTrie {
     void Insert(const TData& data);
     const TData& Find(const CaseInsensitiveString& key);
     void Erase(const CaseInsensitiveString& key);
-    void SaveToFile(std::ofstream& file) const;
-    void LoadFromFile(std::ifstream& file);
+    void SaveToFile(FILE *file) const;
+    void LoadFromFile(FILE *file);
     int Size() const;
 };

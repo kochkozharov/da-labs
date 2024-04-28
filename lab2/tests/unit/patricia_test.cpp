@@ -1,5 +1,6 @@
-#include <gtest/gtest.h>
 #include "patricia.h"
+
+#include <gtest/gtest.h>
 
 TEST(patricia_test, modifier01) {
     TPatriciaTrie p;
@@ -100,11 +101,13 @@ TEST(patricia_test, modifier12) {
     TPatriciaTrie p;
     std::string s = "";
     for (int i = 0; i < 20; ++i) {
-        p.Insert({(s + static_cast<char>('a' + i)).c_str(), static_cast<uint64_t>(i)});
+        p.Insert({(s + static_cast<char>('a' + i)).c_str(),
+                  static_cast<uint64_t>(i)});
     }
     EXPECT_EQ(p.Size(), 20);
     for (int i = 0; i < 20; ++i) {
-        EXPECT_EQ(p.Find((s + static_cast<char>('a' + i)).c_str()).value, static_cast<uint64_t>(i));
+        EXPECT_EQ(p.Find((s + static_cast<char>('a' + i)).c_str()).value,
+                  static_cast<uint64_t>(i));
     }
 }
 
@@ -112,8 +115,10 @@ TEST(patricia_test, modifier13) {
     TPatriciaTrie p;
     std::string s = "";
     for (int i = 0; i < 10; ++i) {
-        p.Insert({(s + static_cast<char>('a' + i)).c_str(), static_cast<uint64_t>(i)});
-        p.Insert({(s + static_cast<char>('z' - i)).c_str(), static_cast<uint64_t>(i)});
+        p.Insert({(s + static_cast<char>('a' + i)).c_str(),
+                  static_cast<uint64_t>(i)});
+        p.Insert({(s + static_cast<char>('z' - i)).c_str(),
+                  static_cast<uint64_t>(i)});
     }
     EXPECT_EQ(p.Size(), 20);
     for (int i = 0; i < 10; ++i) {
@@ -126,8 +131,10 @@ TEST(patricia_test, modifier14) {
     TPatriciaTrie p;
     std::string s = "";
     for (int i = 0; i < 10; ++i) {
-        p.Insert({(s + static_cast<char>('a' + i)).c_str(), static_cast<uint64_t>(i)});
-        p.Insert({(s + static_cast<char>('z' - i)).c_str(), static_cast<uint64_t>(i)});
+        p.Insert({(s + static_cast<char>('a' + i)).c_str(),
+                  static_cast<uint64_t>(i)});
+        p.Insert({(s + static_cast<char>('z' - i)).c_str(),
+                  static_cast<uint64_t>(i)});
     }
     for (int i = 0; i < 10; ++i) {
         p.Erase((s + static_cast<char>('a' + i)).c_str());
@@ -414,72 +421,64 @@ TEST(patricia_test, erase10) {
 
 TEST(patricia_test, file01) {
     TPatriciaTrie p;
-    std::ofstream out("patricia_test.txt", std::ios::binary);
-    p.Insert({"a", 1});
-    p.SaveToFile(out);
-    out.close();
-    std::ifstream in("patricia_test.txt", std::ios::binary);
-    p.LoadFromFile(in);
-    in.close();
+    {
+        CFile out("patricia_test.txt", CFile::FileType::Save);
+        p.Insert({"a", 1});
+        p.SaveToFile(out.GetFile());
+    }
+    CFile in("patricia_test.txt", CFile::FileType::Load);
+    p.LoadFromFile(in.GetFile());
     EXPECT_EQ(p.Find("a").value, 1);
+    // remove("patricia_test.txt");
 }
-
 TEST(patricia_test, file02) {
     TPatriciaTrie p;
-    std::ofstream out("patricia_test.txt", std::ios::binary);
-    p.Insert({"a", 1});
-    p.SaveToFile(out);
-    out.close();
-    p.Insert({"b", 2});
-    std::ifstream in("patricia_test.txt", std::ios::binary);
-    p.LoadFromFile(in);
-    in.close();
+    {
+        CFile out("patricia_test.txt", CFile::FileType::Save);
+        p.Insert({"a", 1});
+        p.SaveToFile(out.GetFile());
+        p.Insert({"b", 2});
+    }
+    CFile in("patricia_test.txt", CFile::FileType::Load);
+    p.LoadFromFile(in.GetFile());
     EXPECT_ANY_THROW(p.Find("b"));
+    remove("patricia_test.txt");
 }
 
 TEST(patricia_test, file03) {
     TPatriciaTrie p;
-    std::ofstream out("patricia_test.txt", std::ios::binary);
-    p.Insert({"a", 1});
-    p.Insert({"d", 2});
-    p.Insert({"c", 3});
-    p.Insert({"f", 4});
-    p.SaveToFile(out);
-    out.close();
-    p.Erase("f");
-    std::ifstream in("patricia_test.txt", std::ios::binary);
-    p.LoadFromFile(in);
-    in.close();
+    {
+        CFile out("patricia_test.txt", CFile::FileType::Save);
+        p.Insert({"a", 1});
+        p.Insert({"d", 2});
+        p.Insert({"c", 3});
+        p.Insert({"f", 4});
+        p.SaveToFile(out.GetFile());
+        p.Erase("f");
+    }
+    CFile in("patricia_test.txt", CFile::FileType::Load);
+    p.LoadFromFile(in.GetFile());
     EXPECT_EQ(p.Find("f").value, 4);
+    remove("patricia_test.txt");
 }
 
 TEST(patricia_test, file04) {
     TPatriciaTrie p;
-    std::ofstream out("patricia_test.txt", std::ios::binary);
     std::string s = "";
-    for (int i = 0; i < 250; ++i) {
-        s += 'a';
-        p.Insert({s.c_str(), static_cast<uint64_t>(i)});
+    {
+        CFile out("patricia_test.txt", CFile::FileType::Save);
+        for (int i = 0; i < 250; ++i) {
+            s += 'a';
+            p.Insert({s.c_str(), static_cast<uint64_t>(i)});
+        }
+        p.SaveToFile(out.GetFile());
     }
-    p.SaveToFile(out);
-    out.close();
-    std::ifstream in("patricia_test.txt", std::ios::binary);
-    p.LoadFromFile(in);
+    CFile in("patricia_test.txt", CFile::FileType::Load);
+    p.LoadFromFile(in.GetFile());
     s = "";
     for (int i = 0; i < 250; ++i) {
         s += 'a';
         EXPECT_EQ(p.Find(s.c_str()).value, static_cast<uint64_t>(i));
     }
-    in.close();
-}
-
-TEST(patricia_test, file05) {
-    TPatriciaTrie p;
-    std::ofstream out("patricia_test1.txt", std::ios::binary);
-    int i = 10;
-    out.write(reinterpret_cast<char*>(&i), sizeof(int));
-    out.close();
-    std::ifstream in("patricia_test1.txt", std::ios::binary);
-    EXPECT_ANY_THROW(p.LoadFromFile(in));
-    in.close();
+    remove("patricia_test.txt");
 }

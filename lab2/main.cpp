@@ -1,4 +1,5 @@
 #include <cinttypes>
+#include <iostream>
 
 #include "patricia.h"
 
@@ -32,28 +33,18 @@ int main() {
             if (cmd == "Save") {
                 CaseInsensitiveString path;
                 path.Scan();
-                std::ofstream file;
+                CFile file(path, CFile::FileType::Save);
                 try {
-                    file.open(path.CStr());
-                } catch (std::exception& e) {
-                    std::cout << "ERROR: " << e.what() << std::endl;
-                }
-                try {
-                    t.SaveToFile(file);
+                    t.SaveToFile(file.GetFile());
                 } catch (std::exception& e) {
                     std::cout << e.what() << std::endl;
                 }
             } else if (cmd == "Load") {
                 CaseInsensitiveString path;
                 path.Scan();
-                std::ifstream file;
+                CFile file(path, CFile::FileType::Load);
                 try {
-                    file.open(path.CStr());
-                } catch (std::exception& e) {
-                    std::cout << "ERROR: " << e.what() << std::endl;
-                }
-                try {
-                    t.LoadFromFile(file);
+                    t.LoadFromFile(file.GetFile());
                 } catch (std::exception& e) {
                     std::cout << e.what() << std::endl;
                 }

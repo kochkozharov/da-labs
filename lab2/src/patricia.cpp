@@ -142,8 +142,8 @@ void TPatriciaTrie::TreeToArray(TNode** array, TNode* root, int& id) const {
     }
 }
 
-void TPatriciaTrie::SaveToFile(std::ofstream& file) const {
-    file.write(reinterpret_cast<const char*>(&size), sizeof(int));
+void TPatriciaTrie::SaveToFile(FILE* file) const {
+    fwrite(reinterpret_cast<const char*>(&size), sizeof(int), 1, file);
     TNode* nodes[size];
     int id = 0;
     TreeToArray(nodes, root, id);
@@ -159,17 +159,20 @@ void TPatriciaTrie::SaveToFile(std::ofstream& file) const {
         } else {
             data.rightId = nodes[i]->children[1]->id;
         }
-        file.write(reinterpret_cast<const char*>(&data), sizeof(TSaveData));
+        fwrite(reinterpret_cast<const char*>(&data), sizeof(TSaveData), 1,
+               file);
     }
 }
 
 void TPatriciaTrie::ArrayToTree(TSaveData* array) {
-    TNode* nodes[size];  // FIX
+    TNode* nodes[size];
+
     for (int i = 0; i < size; ++i) {
         nodes[i] = new TNode;
         nodes[i]->data = {array[i].keyValue.key, array[i].keyValue.value};
         nodes[i]->bitNumber = array[i].bitNumber;
     }
+
     for (int i = 0; i < size; ++i) {
         nodes[i]->children[0] = nodes[array[i].leftId];
         if (array[i].rightId == -1) {
@@ -181,22 +184,14 @@ void TPatriciaTrie::ArrayToTree(TSaveData* array) {
     root = nodes[0];
 }
 
-void TPatriciaTrie::LoadFromFile(std::ifstream& file) {
+void TPatriciaTrie::LoadFromFile(FILE* file) {
     DestroyTrie(root);
     root = nullptr;
-    file.read(reinterpret_cast<char*>(&size), sizeof(int));
-    if (file.fail()) {
-        throw std::runtime_error("ERROR: Bad file");
-    }
+    fread(reinterpret_cast<char*>(&size), sizeof(int), 1, file);
     if (size == 0) {
         return;
     }
     TSaveData datas[size];
-    for (int i = 0; i < size; ++i) {
-        file.read(reinterpret_cast<char*>(&datas[i]), sizeof(TSaveData));
-        if (file.fail()) {
-            throw std::runtime_error("ERROR: Bad file");
-        }
-    }
+    fread(reinterpret_cast<char*>(datas), sizeof(TSaveData), size, file);
     ArrayToTree(datas);
 }

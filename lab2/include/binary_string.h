@@ -1,7 +1,7 @@
 #pragma once
 #include <cctype>
 #include <cstring>
-#include <iostream>
+#include <cstdio>
 
 struct CaseInsensitiveString {
    private:

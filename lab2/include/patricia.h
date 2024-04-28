@@ -1,7 +1,6 @@
 #pragma once
 #include <cstdint>
 #include <cstring>
-#include <fstream>
 #include <stdexcept>
 
 #include "binary_string.h"
@@ -30,7 +29,6 @@ struct CFile {
     CFile& operator=(CFile&& other) = delete;
     ~CFile() {
         fclose(file);
-        //remove(name.CStr());
     }
 };
 

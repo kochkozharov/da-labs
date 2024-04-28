@@ -188,7 +188,7 @@ void TPatriciaTrie::LoadFromFile(FILE* file) {
     if (size == 0) {
         return;
     }
-    TSaveData *datas = new TSaveData[size];
+    TSaveData* datas = new TSaveData[size];
     fread(reinterpret_cast<char*>(datas), sizeof(TSaveData), size, file);
     ArrayToTree(datas);
     delete[] datas;

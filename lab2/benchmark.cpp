@@ -1,6 +1,6 @@
+#include <chrono>
 #include <iostream>
 #include <map>
-#include <chrono>
 
 #include "patricia.h"
 
@@ -15,21 +15,24 @@ int main() {
     std::chrono::time_point<std::chrono::system_clock> start, end;
     int64_t rb_ts = 0, bst_ts = 0;
     while (std::cin >> action) {
-        if( action == '+' ) {
+        if (action == '+') {
             std::cin >> key >> value;
             {
                 start = std::chrono::system_clock::now();
-                rb_tree.insert( {key, value} );
+                rb_tree.insert({key, value});
                 end = std::chrono::system_clock::now();
-                rb_ts += std::chrono::duration_cast<duration_t>( end - start ).count();
+                rb_ts +=
+                    std::chrono::duration_cast<duration_t>(end - start).count();
             }
             {
                 start = std::chrono::system_clock::now();
-                try{
+                try {
                     t.Insert({key.c_str(), value});
-                } catch(std::exception &e) {}
+                } catch (std::exception &e) {
+                }
                 end = std::chrono::system_clock::now();
-                bst_ts += std::chrono::duration_cast<duration_t>( end - start ).count();
+                bst_ts +=
+                    std::chrono::duration_cast<duration_t>(end - start).count();
             }
         }
     }

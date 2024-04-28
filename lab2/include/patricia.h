@@ -73,12 +73,11 @@ class TPatriciaTrie {
 
     struct TSaveData {
         int id;
-        TData keyValue;
+        char key[257];
+        uint64_t value;
         int bitNumber;
         int leftId;
         int rightId;
-
-        TSaveData() = default;
     };
 
     TNode* root;

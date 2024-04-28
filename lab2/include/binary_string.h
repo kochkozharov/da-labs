@@ -1,7 +1,7 @@
 #pragma once
 #include <cctype>
-#include <cstring>
 #include <cstdio>
+#include <cstring>
 
 struct CaseInsensitiveString {
    private:
@@ -11,15 +11,12 @@ struct CaseInsensitiveString {
 
    public:
     CaseInsensitiveString() = default;
-
     CaseInsensitiveString(const char* value) {
         for (int i = 0; i < KEY_LENGTH && value[i] != '\0'; ++i) {
             str[i] = std::tolower(value[i]);
             sz++;
         }
-        for (int i = sz; i < KEY_LENGTH; ++i) {
-            str[sz] = '\0';
-        }
+        str[sz] = '\0';
     }
     const char& operator[](int idx) const { return str[idx]; }
     int size() const { return sz; }

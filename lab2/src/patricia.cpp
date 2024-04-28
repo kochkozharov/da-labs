@@ -149,9 +149,10 @@ void TPatriciaTrie::SaveToFile(FILE* file) const {
     TreeToArray(nodes, root, id);
     for (int i = 0; i < size; ++i) {
         TSaveData data;
+        memset(&data, 0, sizeof(data));
         data.id = i;
-        data.keyValue.key = nodes[i]->data.key;
-        data.keyValue.value = nodes[i]->data.value;
+        memcpy(data.key, nodes[i]->data.key.CStr(), nodes[i]->data.key.size());
+        data.value = nodes[i]->data.value;
         data.bitNumber = nodes[i]->bitNumber;
         data.leftId = nodes[i]->children[0]->id;
         if (i == 0) {  // root
@@ -169,7 +170,7 @@ void TPatriciaTrie::ArrayToTree(TSaveData* array) {
 
     for (int i = 0; i < size; ++i) {
         nodes[i] = new TNode;
-        nodes[i]->data = {array[i].keyValue.key, array[i].keyValue.value};
+        nodes[i]->data = {array[i].key, array[i].value};
         nodes[i]->bitNumber = array[i].bitNumber;
     }
 

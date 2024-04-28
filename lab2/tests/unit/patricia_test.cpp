@@ -5,21 +5,21 @@
 TEST(patricia_test, modifier01) {
     TPatriciaTrie p;
     p.Insert({"a", 1});
-    EXPECT_EQ(p.Find("a").value, 1);
+    EXPECT_EQ(p.Find("a")->value, 1);
     EXPECT_EQ(p.Size(), 1);
 }
 
 TEST(patricia_test, modifier02) {
     TPatriciaTrie p;
     p.Insert({"a", 1});
-    EXPECT_ANY_THROW(p.Insert({"A", 2}));
+    EXPECT_FALSE(p.Insert({"A", 2}));
 }
 
 TEST(patricia_test, modifier03) {
     TPatriciaTrie p;
     p.Insert({"abc", 10});
     EXPECT_EQ(p.Size(), 1);
-    EXPECT_ANY_THROW(p.Insert({"abc", 20}));
+    EXPECT_FALSE(p.Insert({"abc", 20}));
 }
 
 TEST(patricia_test, modifier04) {
@@ -27,17 +27,17 @@ TEST(patricia_test, modifier04) {
     p.Insert({"ab", 10});
     p.Insert({"abc", 20});
     EXPECT_EQ(p.Size(), 2);
-    EXPECT_EQ(p.Find("ab").value, 10);
-    EXPECT_EQ(p.Find("abc").value, 20);
+    EXPECT_EQ(p.Find("ab")->value, 10);
+    EXPECT_EQ(p.Find("abc")->value, 20);
 }
 
 TEST(patricia_test, modifier05) {
     TPatriciaTrie p;
     p.Insert({"ab", 10});
     p.Insert({"abc", 20});
-    EXPECT_EQ(p.Find("Ab").value, 10);
-    EXPECT_EQ(p.Find("ABC").value, 20);
-    EXPECT_ANY_THROW(p.Find("abcd"));
+    EXPECT_EQ(p.Find("Ab")->value, 10);
+    EXPECT_EQ(p.Find("ABC")->value, 20);
+    EXPECT_FALSE(p.Find("abcd"));
 }
 
 TEST(patricia_test, modifier06) {
@@ -46,8 +46,8 @@ TEST(patricia_test, modifier06) {
     p.Insert({"abc", 20});
     p.Erase("ab");
     EXPECT_EQ(p.Size(), 1);
-    EXPECT_ANY_THROW(p.Find("ab"));
-    EXPECT_EQ(p.Find("abc").value, 20);
+    EXPECT_FALSE(p.Find("ab"));
+    EXPECT_EQ(p.Find("abc")->value, 20);
 }
 
 TEST(patricia_test, modifier07) {
@@ -55,19 +55,19 @@ TEST(patricia_test, modifier07) {
     p.Insert({"ab", 10});
     p.Insert({"abc", 20});
     p.Erase("ABc");
-    EXPECT_EQ(p.Find("ab").value, 10);
-    EXPECT_ANY_THROW(p.Find("aBc"));
+    EXPECT_EQ(p.Find("ab")->value, 10);
+    EXPECT_FALSE(p.Find("aBc"));
 }
 
 TEST(patricia_test, modifier08) {
     TPatriciaTrie p;
     EXPECT_EQ(p.Size(), 0);
-    EXPECT_ANY_THROW(p.Erase("ab"));
+    EXPECT_FALSE(p.Erase("ab"));
 }
 
 TEST(patricia_test, modifier09) {
     TPatriciaTrie p;
-    EXPECT_ANY_THROW(p.Find("ab"));
+    EXPECT_FALSE(p.Find("ab"));
 }
 
 TEST(patricia_test, modifier10) {
@@ -79,9 +79,9 @@ TEST(patricia_test, modifier10) {
     p.Insert({"bac", 50});
     p.Erase("a");
     EXPECT_EQ(p.Size(), 4);
-    EXPECT_ANY_THROW(p.Find("a"));
-    EXPECT_EQ(p.Find("ab").value, 10);
-    EXPECT_EQ(p.Find("abc").value, 20);
+    EXPECT_FALSE(p.Find("a"));
+    EXPECT_EQ(p.Find("ab")->value, 10);
+    EXPECT_EQ(p.Find("abc")->value, 20);
 }
 
 TEST(patricia_test, modifier11) {
@@ -94,7 +94,7 @@ TEST(patricia_test, modifier11) {
     p.Erase("abc");
     p.Insert({"a", 30});
     EXPECT_EQ(p.Size(), 1);
-    EXPECT_EQ(p.Find("a").value, 30);
+    EXPECT_EQ(p.Find("a")->value, 30);
 }
 
 TEST(patricia_test, modifier12) {
@@ -106,7 +106,7 @@ TEST(patricia_test, modifier12) {
     }
     EXPECT_EQ(p.Size(), 20);
     for (int i = 0; i < 20; ++i) {
-        EXPECT_EQ(p.Find((s + static_cast<char>('a' + i)).c_str()).value,
+        EXPECT_EQ(p.Find((s + static_cast<char>('a' + i)).c_str())->value,
                   static_cast<uint64_t>(i));
     }
 }
@@ -122,8 +122,8 @@ TEST(patricia_test, modifier13) {
     }
     EXPECT_EQ(p.Size(), 20);
     for (int i = 0; i < 10; ++i) {
-        EXPECT_EQ(p.Find((s + static_cast<char>('a' + i)).c_str()).value, i);
-        EXPECT_EQ(p.Find((s + static_cast<char>('z' - i)).c_str()).value, i);
+        EXPECT_EQ(p.Find((s + static_cast<char>('a' + i)).c_str())->value, i);
+        EXPECT_EQ(p.Find((s + static_cast<char>('z' - i)).c_str())->value, i);
     }
 }
 
@@ -138,11 +138,11 @@ TEST(patricia_test, modifier14) {
     }
     for (int i = 0; i < 10; ++i) {
         p.Erase((s + static_cast<char>('a' + i)).c_str());
-        EXPECT_EQ(p.Find((s + static_cast<char>('z' - i)).c_str()).value, i);
+        EXPECT_EQ(p.Find((s + static_cast<char>('z' - i)).c_str())->value, i);
         p.Erase((s + static_cast<char>('z' - i)).c_str());
     }
     EXPECT_EQ(p.Size(), 0);
-    EXPECT_ANY_THROW(p.Find("a"));
+    EXPECT_FALSE(p.Find("a"));
 }
 
 TEST(patricia_test, modifier15) {
@@ -156,7 +156,7 @@ TEST(patricia_test, modifier15) {
     EXPECT_EQ(p.Size(), 250);
 
     for (int i = 249; i >= 0; --i) {
-        EXPECT_EQ(p.Find(s.c_str()).value, i);
+        EXPECT_EQ(p.Find(s.c_str())->value, i);
         s.pop_back();
     }
 
@@ -179,7 +179,7 @@ TEST(patricia_test, modifier16) {
     EXPECT_EQ(p.Size(), 249);
 
     for (int i = 249; i >= 1; --i) {
-        EXPECT_EQ(p.Find(s.c_str()).value, i);
+        EXPECT_EQ(p.Find(s.c_str())->value, i);
         s.pop_back();
     }
 }
@@ -211,41 +211,41 @@ TEST(patricia_test, modifier18) {
     p.Insert({"c", 3});
     p.Insert({"f", 4});
     p.Erase("a");
-    EXPECT_ANY_THROW(p.Find("a"));
-    EXPECT_EQ(p.Find("c").value, 3);
-    EXPECT_EQ(p.Find("d").value, 2);
-    EXPECT_EQ(p.Find("f").value, 4);
+    EXPECT_FALSE(p.Find("a"));
+    EXPECT_EQ(p.Find("c")->value, 3);
+    EXPECT_EQ(p.Find("d")->value, 2);
+    EXPECT_EQ(p.Find("f")->value, 4);
     p.Erase("d");
-    EXPECT_ANY_THROW(p.Find("d"));
-    EXPECT_EQ(p.Find("c").value, 3);
-    EXPECT_EQ(p.Find("f").value, 4);
+    EXPECT_FALSE(p.Find("d"));
+    EXPECT_EQ(p.Find("c")->value, 3);
+    EXPECT_EQ(p.Find("f")->value, 4);
     p.Erase("c");
-    EXPECT_ANY_THROW(p.Find("c"));
-    EXPECT_EQ(p.Find("f").value, 4);
+    EXPECT_FALSE(p.Find("c"));
+    EXPECT_EQ(p.Find("f")->value, 4);
     p.Erase("f");
-    EXPECT_ANY_THROW(p.Find("f"));
+    EXPECT_FALSE(p.Find("f"));
     p.Insert({"a", 1});
     p.Insert({"d", 2});
     p.Insert({"c", 3});
     p.Insert({"f", 4});
-    EXPECT_EQ(p.Find("a").value, 1);
-    EXPECT_EQ(p.Find("c").value, 3);
-    EXPECT_EQ(p.Find("d").value, 2);
-    EXPECT_EQ(p.Find("f").value, 4);
+    EXPECT_EQ(p.Find("a")->value, 1);
+    EXPECT_EQ(p.Find("c")->value, 3);
+    EXPECT_EQ(p.Find("d")->value, 2);
+    EXPECT_EQ(p.Find("f")->value, 4);
 }
 
 TEST(patricia_test, insert01) {
     TPatriciaTrie p;
     p.Insert({"a", 1});
-    EXPECT_EQ(p.Find("a").value, 1);
+    EXPECT_EQ(p.Find("a")->value, 1);
 }
 
 TEST(patricia_test, insert02) {
     TPatriciaTrie p;
     p.Insert({"a", 1});
     p.Insert({"b", 2});
-    EXPECT_EQ(p.Find("a").value, 1);
-    EXPECT_EQ(p.Find("b").value, 2);
+    EXPECT_EQ(p.Find("a")->value, 1);
+    EXPECT_EQ(p.Find("b")->value, 2);
 }
 
 TEST(patricia_test, insert03) {
@@ -254,10 +254,10 @@ TEST(patricia_test, insert03) {
     p.Insert({"d", 2});
     p.Insert({"c", 3});
     p.Insert({"f", 4});
-    EXPECT_EQ(p.Find("a").value, 1);
-    EXPECT_EQ(p.Find("d").value, 2);
-    EXPECT_EQ(p.Find("c").value, 3);
-    EXPECT_EQ(p.Find("f").value, 4);
+    EXPECT_EQ(p.Find("a")->value, 1);
+    EXPECT_EQ(p.Find("d")->value, 2);
+    EXPECT_EQ(p.Find("c")->value, 3);
+    EXPECT_EQ(p.Find("f")->value, 4);
 }
 
 TEST(patricia_test, insert04) {
@@ -265,14 +265,14 @@ TEST(patricia_test, insert04) {
     p.Insert({"a", 1});
     p.Erase("a");
     p.Insert({"a", 2});
-    EXPECT_EQ(p.Find("a").value, 2);
+    EXPECT_EQ(p.Find("a")->value, 2);
 }
 
 TEST(patricia_test, erase01) {
     TPatriciaTrie p;
     p.Insert({"a", 1});
     p.Erase("a");
-    EXPECT_ANY_THROW(p.Find("a"));
+    EXPECT_FALSE(p.Find("a"));
 }
 
 TEST(patricia_test, erase02) {
@@ -280,10 +280,10 @@ TEST(patricia_test, erase02) {
     p.Insert({"a", 1});
     p.Insert({"b", 2});
     p.Erase("b");
-    EXPECT_ANY_THROW(p.Find("b"));
-    EXPECT_EQ(p.Find("a").value, 1);
+    EXPECT_FALSE(p.Find("b"));
+    EXPECT_EQ(p.Find("a")->value, 1);
     p.Erase("a");
-    EXPECT_ANY_THROW(p.Find("a"));
+    EXPECT_FALSE(p.Find("a"));
 }
 
 TEST(patricia_test, erase03) {
@@ -291,10 +291,10 @@ TEST(patricia_test, erase03) {
     p.Insert({"a", 1});
     p.Insert({"b", 2});
     p.Erase("a");
-    EXPECT_ANY_THROW(p.Find("a"));
-    EXPECT_EQ(p.Find("b").value, 2);
+    EXPECT_FALSE(p.Find("a"));
+    EXPECT_EQ(p.Find("b")->value, 2);
     p.Erase("b");
-    EXPECT_ANY_THROW(p.Find("b"));
+    EXPECT_FALSE(p.Find("b"));
 }
 
 TEST(patricia_test, erase04) {
@@ -304,17 +304,17 @@ TEST(patricia_test, erase04) {
     p.Insert({"c", 3});
     p.Insert({"f", 4});
     p.Erase("c");
-    EXPECT_ANY_THROW(p.Find("c"));
-    EXPECT_EQ(p.Find("a").value, 1);
-    EXPECT_EQ(p.Find("d").value, 2);
-    EXPECT_EQ(p.Find("f").value, 4);
+    EXPECT_FALSE(p.Find("c"));
+    EXPECT_EQ(p.Find("a")->value, 1);
+    EXPECT_EQ(p.Find("d")->value, 2);
+    EXPECT_EQ(p.Find("f")->value, 4);
     p.Erase("d");
-    EXPECT_ANY_THROW(p.Find("d"));
-    EXPECT_EQ(p.Find("a").value, 1);
-    EXPECT_EQ(p.Find("f").value, 4);
+    EXPECT_FALSE(p.Find("d"));
+    EXPECT_EQ(p.Find("a")->value, 1);
+    EXPECT_EQ(p.Find("f")->value, 4);
     p.Erase("a");
-    EXPECT_ANY_THROW(p.Find("a"));
-    EXPECT_EQ(p.Find("f").value, 4);
+    EXPECT_FALSE(p.Find("a"));
+    EXPECT_EQ(p.Find("f")->value, 4);
 }
 
 TEST(patricia_test, erase05) {
@@ -324,17 +324,17 @@ TEST(patricia_test, erase05) {
     p.Insert({"c", 3});
     p.Insert({"f", 4});
     p.Erase("f");
-    EXPECT_ANY_THROW(p.Find("f"));
-    EXPECT_EQ(p.Find("a").value, 1);
-    EXPECT_EQ(p.Find("d").value, 2);
-    EXPECT_EQ(p.Find("c").value, 3);
+    EXPECT_FALSE(p.Find("f"));
+    EXPECT_EQ(p.Find("a")->value, 1);
+    EXPECT_EQ(p.Find("d")->value, 2);
+    EXPECT_EQ(p.Find("c")->value, 3);
     p.Erase("d");
-    EXPECT_ANY_THROW(p.Find("d"));
-    EXPECT_EQ(p.Find("a").value, 1);
-    EXPECT_EQ(p.Find("c").value, 3);
+    EXPECT_FALSE(p.Find("d"));
+    EXPECT_EQ(p.Find("a")->value, 1);
+    EXPECT_EQ(p.Find("c")->value, 3);
     p.Erase("a");
-    EXPECT_ANY_THROW(p.Find("a"));
-    EXPECT_EQ(p.Find("c").value, 3);
+    EXPECT_FALSE(p.Find("a"));
+    EXPECT_EQ(p.Find("c")->value, 3);
 }
 
 TEST(patricia_test, erase06) {
@@ -344,14 +344,14 @@ TEST(patricia_test, erase06) {
     p.Insert({"c", 3});
     p.Insert({"f", 4});
     p.Erase("d");
-    EXPECT_ANY_THROW(p.Find("d"));
-    EXPECT_EQ(p.Find("a").value, 1);
-    EXPECT_EQ(p.Find("c").value, 3);
-    EXPECT_EQ(p.Find("f").value, 4);
+    EXPECT_FALSE(p.Find("d"));
+    EXPECT_EQ(p.Find("a")->value, 1);
+    EXPECT_EQ(p.Find("c")->value, 3);
+    EXPECT_EQ(p.Find("f")->value, 4);
     p.Erase("a");
-    EXPECT_ANY_THROW(p.Find("a"));
-    EXPECT_EQ(p.Find("c").value, 3);
-    EXPECT_EQ(p.Find("f").value, 4);
+    EXPECT_FALSE(p.Find("a"));
+    EXPECT_EQ(p.Find("c")->value, 3);
+    EXPECT_EQ(p.Find("f")->value, 4);
 }
 
 TEST(patricia_test, erase07) {
@@ -361,14 +361,14 @@ TEST(patricia_test, erase07) {
     p.Insert({"c", 3});
     p.Insert({"f", 4});
     p.Erase("a");
-    EXPECT_ANY_THROW(p.Find("a"));
-    EXPECT_EQ(p.Find("c").value, 3);
-    EXPECT_EQ(p.Find("d").value, 2);
-    EXPECT_EQ(p.Find("f").value, 4);
+    EXPECT_FALSE(p.Find("a"));
+    EXPECT_EQ(p.Find("c")->value, 3);
+    EXPECT_EQ(p.Find("d")->value, 2);
+    EXPECT_EQ(p.Find("f")->value, 4);
     p.Erase("d");
-    EXPECT_ANY_THROW(p.Find("d"));
-    EXPECT_EQ(p.Find("c").value, 3);
-    EXPECT_EQ(p.Find("f").value, 4);
+    EXPECT_FALSE(p.Find("d"));
+    EXPECT_EQ(p.Find("c")->value, 3);
+    EXPECT_EQ(p.Find("f")->value, 4);
 }
 
 TEST(patricia_test, erase08) {
@@ -379,10 +379,10 @@ TEST(patricia_test, erase08) {
     p.Insert({"f", 4});
     p.Erase("a");
     p.Erase("c");
-    EXPECT_EQ(p.Find("d").value, 2);
-    EXPECT_EQ(p.Find("f").value, 4);
+    EXPECT_EQ(p.Find("d")->value, 2);
+    EXPECT_EQ(p.Find("f")->value, 4);
     p.Erase("d");
-    EXPECT_EQ(p.Find("f").value, 4);
+    EXPECT_EQ(p.Find("f")->value, 4);
 }
 
 TEST(patricia_test, erase09) {
@@ -392,14 +392,14 @@ TEST(patricia_test, erase09) {
     p.Insert({"c", 3});
     p.Insert({"f", 4});
     p.Erase("f");
-    EXPECT_EQ(p.Find("d").value, 2);
-    EXPECT_EQ(p.Find("c").value, 3);
-    EXPECT_EQ(p.Find("a").value, 1);
+    EXPECT_EQ(p.Find("d")->value, 2);
+    EXPECT_EQ(p.Find("c")->value, 3);
+    EXPECT_EQ(p.Find("a")->value, 1);
     p.Erase("c");
-    EXPECT_EQ(p.Find("d").value, 2);
-    EXPECT_EQ(p.Find("a").value, 1);
+    EXPECT_EQ(p.Find("d")->value, 2);
+    EXPECT_EQ(p.Find("a")->value, 1);
     p.Erase("d");
-    EXPECT_EQ(p.Find("a").value, 1);
+    EXPECT_EQ(p.Find("a")->value, 1);
 }
 
 TEST(patricia_test, erase10) {
@@ -409,14 +409,14 @@ TEST(patricia_test, erase10) {
     p.Insert({"c", 3});
     p.Insert({"f", 4});
     p.Erase("f");
-    EXPECT_EQ(p.Find("d").value, 2);
-    EXPECT_EQ(p.Find("c").value, 3);
-    EXPECT_EQ(p.Find("a").value, 1);
+    EXPECT_EQ(p.Find("d")->value, 2);
+    EXPECT_EQ(p.Find("c")->value, 3);
+    EXPECT_EQ(p.Find("a")->value, 1);
     p.Erase("d");
-    EXPECT_EQ(p.Find("a").value, 1);
-    EXPECT_EQ(p.Find("c").value, 3);
+    EXPECT_EQ(p.Find("a")->value, 1);
+    EXPECT_EQ(p.Find("c")->value, 3);
     p.Erase("c");
-    EXPECT_EQ(p.Find("a").value, 1);
+    EXPECT_EQ(p.Find("a")->value, 1);
 }
 
 TEST(patricia_test, file01) {
@@ -428,7 +428,7 @@ TEST(patricia_test, file01) {
     }
     CFile in("patricia_test.txt", CFile::FileType::Load);
     p.LoadFromFile(in.GetFile());
-    EXPECT_EQ(p.Find("a").value, 1);
+    EXPECT_EQ(p.Find("a")->value, 1);
     // remove("patricia_test.txt");
 }
 TEST(patricia_test, file02) {
@@ -441,7 +441,7 @@ TEST(patricia_test, file02) {
     }
     CFile in("patricia_test.txt", CFile::FileType::Load);
     p.LoadFromFile(in.GetFile());
-    EXPECT_ANY_THROW(p.Find("b"));
+    EXPECT_FALSE(p.Find("b"));
     remove("patricia_test.txt");
 }
 
@@ -458,7 +458,7 @@ TEST(patricia_test, file03) {
     }
     CFile in("patricia_test.txt", CFile::FileType::Load);
     p.LoadFromFile(in.GetFile());
-    EXPECT_EQ(p.Find("f").value, 4);
+    EXPECT_EQ(p.Find("f")->value, 4);
     remove("patricia_test.txt");
 }
 
@@ -478,7 +478,7 @@ TEST(patricia_test, file04) {
     s = "";
     for (int i = 0; i < 250; ++i) {
         s += 'a';
-        EXPECT_EQ(p.Find(s.c_str()).value, static_cast<uint64_t>(i));
+        EXPECT_EQ(p.Find(s.c_str())->value, static_cast<uint64_t>(i));
     }
     remove("patricia_test.txt");
 }

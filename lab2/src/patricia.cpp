@@ -49,19 +49,19 @@ TPatriciaTrie::TNode*& TPatriciaTrie::FindNode(const CaseInsensitiveString& key,
     return previous.key->children[previous.value];
 }
 
-void TPatriciaTrie::Insert(const TData& data) {
+bool TPatriciaTrie::Insert(const TData& data) {
     if (root == nullptr) {
         TNode* inserting = new TNode{data};
         root = inserting;
         root->children[0] = root;
         root->bitNumber = -1;
         ++size;
-        return;
+        return true;
     }
     TNode* found = FindNode(data.key, -1);
     int bitIndex = BitDifference(data.key, found->data.key);
     if (bitIndex == -1) {
-        throw std::logic_error("Exist");
+        return false;
     }
     TNode* inserting = new TNode{data};
     inserting->bitNumber = bitIndex;
@@ -71,24 +71,25 @@ void TPatriciaTrie::Insert(const TData& data) {
     inserting->children[!differentBit] = place;
     place = inserting;
     ++size;
+    return true;
 }
 
-const TPatriciaTrie::TData& TPatriciaTrie::Find(
+const TPatriciaTrie::TData* TPatriciaTrie::Find(
     const CaseInsensitiveString& key) {
     TNode* found = FindNode(key, -1);
     if (found == nullptr || BitDifference(key, found->data.key) != -1) {
-        throw std::logic_error("NoSuchWord");
+        return nullptr;
     }
-    return found->data;
+    return &found->data;
 }
 
-void TPatriciaTrie::Erase(const CaseInsensitiveString& key) {
+bool TPatriciaTrie::Erase(const CaseInsensitiveString& key) {
     TNode*& deleting = FindNode(key, -1);
     if (deleting == nullptr) {
-        throw std::logic_error("NoSuchWord");
+        return false;
     }
     if (BitDifference(key, deleting->data.key) != -1) {
-        throw std::logic_error("NoSuchWord");
+        return false;
     }
     --size;
     if (deleting->children[0] == deleting ||
@@ -96,17 +97,17 @@ void TPatriciaTrie::Erase(const CaseInsensitiveString& key) {
         if (deleting == root) {
             delete deleting;
             root = nullptr;
-            return;
+            return true;
         }
         TNode*& deletingParentPointer = FindNode(key, deleting->bitNumber);
         if (deleting == deleting->children[0]) {
             deletingParentPointer = deleting->children[1];  // non-self pointer
             delete deleting;
-            return;
+            return true;
         }
         deletingParentPointer = deleting->children[0];  // non-self pointer
         delete deleting;
-        return;
+        return true;
     }
     TPair<TNode*, int> q = FindPreviousNode(key, -1);
     TNode*& backwardPointerToQ = FindNode(q.key->data.key, -1);
@@ -115,6 +116,7 @@ void TPatriciaTrie::Erase(const CaseInsensitiveString& key) {
     backwardPointerToQ = deleting;
     parentPointerToQ = q.key->children[!q.value];
     delete q.key;
+    return true;
 }
 
 int TPatriciaTrie::Size() const { return size; }
@@ -135,8 +137,11 @@ void TPatriciaTrie::TreeToArray(TNode** array, TNode* root, int& id) const {
     }
 }
 
-void TPatriciaTrie::SaveToFile(FILE* file) const {
-    fwrite(reinterpret_cast<const char*>(&size), sizeof(int), 1, file);
+bool TPatriciaTrie::SaveToFile(FILE* file) const {
+    if (fwrite(reinterpret_cast<const char*>(&size), sizeof(int), 1, file) <
+        1) {
+        return false;
+    };
     TNode** nodes = new TNode*[size];
     int id = 0;
     TreeToArray(nodes, root, id);
@@ -153,10 +158,13 @@ void TPatriciaTrie::SaveToFile(FILE* file) const {
         } else {
             data.rightId = nodes[i]->children[1]->id;
         }
-        fwrite(reinterpret_cast<const char*>(&data), sizeof(TSaveData), 1,
-               file);
+        if (fwrite(reinterpret_cast<const char*>(&data), sizeof(TSaveData), 1,
+                   file) < 1) {
+            return false;
+        };
     }
     delete[] nodes;
+    return true;
 }
 
 void TPatriciaTrie::ArrayToTree(TSaveData* array) {
@@ -181,15 +189,20 @@ void TPatriciaTrie::ArrayToTree(TSaveData* array) {
     delete[] nodes;
 }
 
-void TPatriciaTrie::LoadFromFile(FILE* file) {
+bool TPatriciaTrie::LoadFromFile(FILE* file) {
     DestroyTrie(root);
     root = nullptr;
-    fread(reinterpret_cast<char*>(&size), sizeof(int), 1, file);
+    if (fread(reinterpret_cast<char*>(&size), sizeof(int), 1, file) < 1) {
+        return false;
+    }
     if (size == 0) {
-        return;
+        return true;
     }
     TSaveData* datas = new TSaveData[size];
-    fread(reinterpret_cast<char*>(datas), sizeof(TSaveData), size, file);
+    if (fread(reinterpret_cast<char*>(datas), sizeof(TSaveData), size, file) < size) {
+        return false;
+    }
     ArrayToTree(datas);
     delete[] datas;
+    return true;
 }

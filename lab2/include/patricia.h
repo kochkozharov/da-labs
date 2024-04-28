@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <cstring>
-#include <stdexcept>
+#include <utility>
 
 #include "binary_string.h"
 
@@ -16,9 +16,10 @@ struct CFile {
         } else {
             file = fopen(s.CStr(), "rb");
         }
-        if (file == nullptr) {
-            throw std::logic_error("Bad File");
-        }
+
+    }
+    bool check() {
+        return file != nullptr;
     }
     FILE* GetFile() { return file; }
     CFile() = delete;
@@ -88,10 +89,10 @@ class TPatriciaTrie {
    public:
     TPatriciaTrie();
     ~TPatriciaTrie();
-    void Insert(const TData& data);
-    const TData& Find(const CaseInsensitiveString& key);
-    void Erase(const CaseInsensitiveString& key);
-    void SaveToFile(FILE* file) const;
-    void LoadFromFile(FILE* file);
+    bool Insert(const TData& data);
+    const TData *Find(const CaseInsensitiveString& key);
+    bool Erase(const CaseInsensitiveString& key);
+    bool SaveToFile(FILE* file) const;
+    bool LoadFromFile(FILE* file);
     int Size() const;
 };

@@ -1,5 +1,4 @@
 #include <cinttypes>
-#include <iostream>
 
 #include "patricia.h"
 
@@ -12,19 +11,15 @@ int main() {
             uint64_t value;
             key.Scan();
             scanf("%" SCNu64, &value);
-            try {
-                t.Insert({key, value});
-            } catch (std::exception& e) {
-                std::cout << e.what() << std::endl;
+            if (!t.Insert({key, value})) {
+                printf("Exist\n");
                 continue;
             }
         } else if (input == "-") {
             CaseInsensitiveString key;
             key.Scan();
-            try {
-                t.Erase(key);
-            } catch (std::exception& e) {
-                std::cout << e.what() << std::endl;
+            if (!t.Erase(key)) {
+                printf("NoSuchWord\n");
                 continue;
             }
         } else if (input == "!") {
@@ -34,36 +29,38 @@ int main() {
                 CaseInsensitiveString path;
                 path.Scan();
                 CFile file(path, CFile::FileType::Save);
-                try {
-                    t.SaveToFile(file.GetFile());
-                } catch (std::exception& e) {
-                    std::cout << e.what() << std::endl;
+                if (!file.check()) {
+                    fprintf(stderr, "ERROR: Bad File\n");
+                    continue;
+                }
+                if (!t.SaveToFile(file.GetFile())) {
+                    fprintf(stderr, "ERROR: Bad File\n");
+                    continue;
                 }
             } else if (cmd == "Load") {
                 CaseInsensitiveString path;
                 path.Scan();
                 CFile file(path, CFile::FileType::Load);
-                try {
-                    t.LoadFromFile(file.GetFile());
-                } catch (std::exception& e) {
-                    std::cout << e.what() << std::endl;
+                if (!file.check()) {
+                    fprintf(stderr, "ERROR: Bad File\n");
+                    continue;
+                }
+                if (!t.LoadFromFile(file.GetFile())) {
+                    fprintf(stderr, "ERROR: Bad File\n");
+                    continue;
                 }
             }
-            std::cout << "OK" << std::endl;
-            continue;
         } else {
-            TPair<CaseInsensitiveString, uint64_t> p;
-            try {
-                p = t.Find(input.CStr());
-            } catch (std::exception& e) {
-                std::cout << e.what() << std::endl;
+            const TPair<CaseInsensitiveString, uint64_t>* p;
+            p = t.Find(input.CStr());
+            if (!p) {
+                printf("NoSuchWord\n");
                 continue;
             }
-            std::cout << "OK: " << p.value << std::endl;
+            printf("OK: %" PRIu64 "\n", p->value);
             continue;
         }
-        std::cout << "OK" << std::endl;
+        printf("OK\n");
     }
-
     return 0;
 }

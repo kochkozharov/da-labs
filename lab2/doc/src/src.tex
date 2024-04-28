@@ -1,0 +1,195 @@
+\section{Описание}
+Требуется написать реализацию PATRICIA Trie.
+
+Как сказано в \cite{Mehta}: \enquote{Particia -- сжатый бинарный trie, в котором ветка и узлы элементов объединены в единый узел}.
+Каждый узел помимо сохраняемых данных хранит номер бита, который будет проверяться у ключа во время поиска, и два указателя:
+на левого и правого ребёнка.
+
+\pagebreak
+
+\section{Исходный код}
+Так как словарь должен хранить пару \enquote{ключ-значение}, создадим структуру \textit{TPair}. Для узлов дерева в классе \textit{TPatriciaTrie}
+определим приватную структуру \textit{TNode}, которая будет содержать поля \textit{data, children, bitNumber, id}.
+Так же определим структуру \textit{TTCaseInsensitiveString}, которая будет содержать в себе регистронезависимую строку фиксированного размера.
+Для удобства переопределим в классе структуру типа \textit{TPair<TTCaseInsensitiveString, uint64\_t>} как \textit{TData}.
+
+Определим битовые операции со строками. Функция \textit{bool GetBitByIndex(const std::string\& str, int index)} возвращает
+значение бита с номером \textit{index} в строке \textit{str}, используя двоичную маску.
+Функция \textit{int GetBitDifference(const std::string\& a, const std::string\& b)} возвращает первый слева номер бита, различного
+для строк \textit{a} и \textit{b}.
+
+Реализуем поиск по ключу в дереве. Напишем приватный вспомогательный метод 
+\textit{TPair<TPatriciaTrie::TNode*, int> FindPreviousNode(const TTCaseInsensitiveString\& key, int bitNumber)}.
+Он возвращает пару, содержащую указатель на предыдущий узел (родитель искомого) и значение $n$-ного бита, которое необходимо для перехода к 
+искомому узлу. Функция осуществляет обход дерева. В каждом узле вычисляется значения бита с номером \textit{bitNumber} в ключе. Если оно 
+равно 0, то происходит переход по левому указателю, иначе -- по правому. Обход останавливается в момент, когда происходит переход по 
+обратному указателю, то есть значение \textit{bitNumber} следующего меньше или равно значения \textit{bitNumber} предыдущего.
+
+Приватный метод \textit{TNode*\& FindNode(const std::string\& key, int bitNumber)} и публичный 
+\textit{const TData\& Find(const std::string\& key)} используют метод \textit{FindPreviousNode}.
+
+Реализуем вставку в дерево -- метод \textit{bool Insert(const TData\& data)}. Алгоритм вставки
+\textit{theKey} (взят из \cite{Mehta}):
+\begin{enumerate}
+	\item Найти \textit{theKey}. Пусть \textit{reachedKey} -- ключ узла, на котором поиск закончился.
+	\item Определить первый бит слева \textit{lBitPos}, различный для \textit{theKey} и \textit{reachedKey}.
+	\item Создать новый узел с ключом \textit{theKey}, в поле \textit{bitNumber} записать \textit{lBitPos}.
+	Вставить этот узел между другими узлами, которые были пройдены во время поиска, так, чтобы последовательность 
+	из \textit{bitNumber} была возрастающей. Эта вставка сломает указатель между двумя узлами $p$ и $q$.
+	Указатель из $p$ теперь содержит новый узел.
+	\item Если \textit{lBitPos} узла с ключом \textit{theKey} равен 1, то указатель на правого ребёнка становится 
+	обратным указателем на этот узел. Иначе -- указатель на левого ребёнка становится обратным. Оставшийся
+	указатель будет содержать $q$.
+\end{enumerate}
+
+Реализуем удаление из дерева -- метод \textit{void Erase(const std::string\& key)}. Пусть узел $p$ -- узел, который
+мы хотим удалить. Возможны два случая:
+\begin{enumerate}
+	\item У $p$ есть указатель на самого себя. Если $p$ -- корень, то узел удаляется, а дерево становится пустым.
+	Иначе -- указатель на $p$ его родителя устанавливаем к несобственному (который не указывает на самого себя) указателю.
+	\item У $p$ нет указателя на самого себя. Ищем узел $q$, у которого есть обратный указатель на $p$. Данные, которые 
+	хранятся в $q$ перемещаются в $p$, и мы удаляем $q$. Чтобы удалить $q$, нужно найти узел $r$, у которого есть
+	обратный указатель на $q$. Обратный указатель на $q$ изменяем, чтобы он указывал на $p$. Прямой указатель от родителя
+	$q$ изменяем, чтобы он указывал на ребёнка $q$.
+\end{enumerate}
+
+Метод \textit{void SaveToFile(FILE* file) const} сохраняет дерево в файл. Для этого сначала все узлы дерева записываются
+в массив с помощью метода \textit{void TreeToArray(TNode** array, TNode* root, int\& id) const}. Все узлы, при этом, пронумерованы (поле \textit{id}).
+Далее в файл записывается количество узлов, затем все узлы последовательно.
+
+Метод \textit{void LoadFromFile(FILE* file)} загружает дерево из файла. Для этого все узлы из файла считываются, а потом с помощью
+метода \textit{void ArrayToTree(TSaveData* array)} строится дерево. Указатели восстанавливаются с помощью \textit{id}.
+
+\begin{longtable}{|p{7.5cm}|p{7.5cm}|}
+\hline
+\rowcolor{lightgray}
+\multicolumn{2}{|c|} {binary\_string.h}\\
+\hline
+int GetBitSize(const std::string\& str)&Функция получения количества бит в строке.\\
+\hline
+int GetBitDifference(const std::string\& a, const std::string\& b)&Функция получения индекса различного бита.\\
+\hline
+bool GetBitByIndex(const std::string\& str, int index)&Функция получения значения бита по индексу.\\
+\hline
+\end{longtable}
+
+\begin{lstlisting}[language=C++]
+
+struct TFile {
+    enum class FileType { Save, Load };
+    FILE* file;
+    TCaseInsensitiveString name;
+    TFile(TCaseInsensitiveString s, FileType mode) {
+        name = s;
+        if (mode == FileType::Save) {
+            file = fopen(s.CStr(), "wb");
+        } else {
+            file = fopen(s.CStr(), "rb");
+        }
+
+    }
+    bool check() {
+        return file != nullptr;
+    }
+    FILE* GetFile() { return file; }
+    TFile() = delete;
+    TFile(const TFile& other) = delete;
+    TFile(TFile&& other) = delete;
+    TFile& operator=(const TFile& other) = delete;
+    TFile& operator=(TFile&& other) = delete;
+    ~TFile() { fclose(file); }
+};
+
+template <class T, class U>
+struct TPair {
+    T key;
+    U value;
+
+    TPair() = default;
+    TPair(const T& key, const U& value) : key(key), value(value) {}
+    TPair(T&& key, U&& value) : key(key), value(value) {}
+    TPair(const TPair& other) : key(other.key), value(other.value) {}
+    TPair(TPair&& other) noexcept
+        : key(std::move(other.key)), value(std::move(other.value)) {}
+    TPair& operator=(const TPair& other) {
+        key = other.key;
+        value = other.value;
+        return *this;
+    }
+    TPair& operator=(TPair&& other) noexcept {
+        key = std::move(other.key);
+        value = std::move(other.value);
+        return *this;
+    }
+};
+
+class TPatriciaTrie {
+   private:
+    using TData = TPair<TCaseInsensitiveString, uint64_t>;
+
+    struct TNode {
+        TData data;
+        TNode* children[2];
+        int bitNumber;
+        int id;
+
+        TNode() = default;
+        TNode(const TData& data);
+    };
+
+    struct TSaveData {
+        int id;
+        char key[257];
+        uint64_t value;
+        int bitNumber;
+        int leftId;
+        int rightId;
+    };
+
+    TNode* root;
+    int size;
+
+    TNode*& FindNode(const TCaseInsensitiveString& key, int bitNumber);
+    TPair<TPatriciaTrie::TNode*, int> FindPreviousNode(
+        const TCaseInsensitiveString& key, int bitNumber);
+    void DestroyTrie(TNode* node);
+    void TreeToArray(TNode** array, TNode* root, int& id) const;
+    void ArrayToTree(TSaveData* array);
+
+   public:
+    TPatriciaTrie();
+    ~TPatriciaTrie();
+    bool Insert(const TData& data);
+    const TData *Find(const TCaseInsensitiveString& key);
+    bool Erase(const TCaseInsensitiveString& key);
+    bool SaveToFile(FILE* file) const;
+    bool LoadFromFile(FILE* file);
+    int Size() const;
+};
+\end{lstlisting}
+\pagebreak
+
+\section{Консоль}
+\begin{alltt}
+ivan@asus-vivobook ~/c/d/b/lab2 (master)> cat testcase
++ word 444
++ word 3
++ wordy 666
+! Save patricia.dat
++ wo 555
+! Load patricia.dat
+word
+- word
+wo
+ivan@asus-vivobook ~/c/d/b/lab2 (master)> ./lab2 < testcase
+OK
+Exist
+OK
+OK
+OK
+OK
+OK: 444
+OK
+NoSuchWord
+\end{alltt}
+\pagebreak

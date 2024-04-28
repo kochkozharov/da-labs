@@ -1,0 +1,79 @@
+\section{Дневник отладки}
+
+Работа разрабатывалась через тестирование. Сначла были написаны тесты отдельных методов Patricia Trie (около 40 штук)
+с использованием библиотеки gtest, а только потом писались реализации этих методов. Таким образом получалось избежать
+проблем с утечками памяти, это всегда легко обнаруживалось и справлялось с помощью тестов, запускаемых через
+утилиту Valgrind (\textit{valgrind --leak-check=full})
+
+Однако одну проблему, которую обнаруживал Valgrind долго не удавалось решить:
+
+\begin{alltt}
+==139533== Syscall param write(buf) points to uninitialised byte(s)
+==139533==    at 0x4CD8D30: write (write.c:26)
+==139533==    by 0x4C59164: _IO_file_write@@GLIBC_2.2.5 (fileops.c:1181)
+==139533==    by 0x4C5726E: new_do_write (fileops.c:449)
+==139533==    by 0x4C58148: _IO_do_write@@GLIBC_2.2.5 (fileops.c:426)
+==139533==    by 0x4C5797F: _IO_file_close_it@@GLIBC_2.2.5 (fileops.c:135)
+==139533==    by 0x4C4B442: fclose@@GLIBC_2.2.5 (iofclose.c:53)
+==139533==    by 0x109BBC: TFile::~TFile() (in /home/ivan/cs/da-labs/build/lab2/lab2)
+==139533==    by 0x109664: main (in /home/ivan/cs/da-labs/build/lab2/lab2)
+==139533==  Address 0x4dd3b7c is 12 bytes inside a block of size 4,096 alloc'd
+==139533==    at 0x4841814: malloc (vg_replace_malloc.c:431)
+==139533==    by 0x4C4B258: _IO_file_doallocate (filedoalloc.c:101)
+==139533==    by 0x4C5A6E8: _IO_doallocbuf (genops.c:347)
+==139533==    by 0x4C5A6E8: _IO_doallocbuf (genops.c:342)
+==139533==    by 0x4C58787: _IO_file_overflow@@GLIBC_2.2.5 (fileops.c:745)
+==139533==    by 0x4C592DE: _IO_new_file_xsputn (fileops.c:1244)
+==139533==    by 0x4C592DE: _IO_file_xsputn@@GLIBC_2.2.5 (fileops.c:1197)
+==139533==    by 0x4C4C93D: fwrite (iofwrite.c:39)
+==139533==    by 0x10A522: TPatriciaTrie::SaveToFile(_IO_FILE*) const (in /home/ivan/cs/da-labs/build/lab2/lab2)
+==139533==    by 0x10961F: main (in /home/ivan/cs/da-labs/build/lab2/lab2)
+==139533== 
+\end{alltt}
+
+Подобные ошибки происходили, каждый раз, когда происходила запись структуры узла в специальном виде в бинарный файл.
+Эта структура содержала в себе буфер из 257 \textit{char}, и даже инициализация этой структуры нулями не помогала.
+Выход был найден такой - структура была максимально упрощена до обычного С-шного POD-a, к которому применялся системный вызов
+\textit{memset} после создания. После такого ошибка перестала появляться, предполагается, что проблема была в том, что 
+запимсывались неинииализированные байты, используемые для выравнивания большой структуры.
+
+Так же была использована утилита \textit{gprof} для построения наглядной таблицы вызовов.
+
+\begin{alltt}
+time  self seconds calls  name   
+52.65   0.10    15433800 GetBitByIndex(TCaseInsensitiveString const&, int)
+10.53   0.02    21515816 TCaseInsensitiveString::size() const
+10.53   0.02       89173 TPatriciaTrie::FindPreviousNode(TCaseInsensitiveString const&, int)
+ 5.26   0.01    21396508 GetBitSize(TCaseInsensitiveString const&)
+ 5.26   0.01      149100 TCaseInsensitiveString::TCaseInsensitiveString(char const*)
+ 5.26   0.01       59654 GetBitDifference
+                         (TCaseInsensitiveString const&, TCaseInsensitiveString const&)
+ 5.26   0.01             TPatriciaTrie::LoadFromFile(_IO_FILE*)
+ 5.26   0.01             std::remove_reference<unsigned long&>::
+                        type&& std::move<unsigned long&>(unsigned long&)
+ 0.00   0.00    15463615 TCaseInsensitiveString::CStr() const
+ 0.00   0.00      119285 operator==(
+                        TCaseInsensitiveString const&, TCaseInsensitiveString const&)
+ 0.00   0.00       89496 TCaseInsensitiveString::Scan(_IO_FILE*)
+ 0.00   0.00       89173 TPatriciaTrie::FindNode
+ (TCaseInsensitiveString const&, int)
+ 0.00   0.00       89173 TPair<TPatriciaTrie::TNode*, int>::
+                    TPair(TPatriciaTrie::TNode* const&, int const&)
+ 0.00   0.00       29841 TCaseInsensitiveString::TCaseInsensitiveString()
+ 0.00   0.00       29840 TPatriciaTrie::Insert(
+    TPair<TCaseInsensitiveString, unsigned long> const&)
+ 0.00   0.00       29840 TPair<TCaseInsensitiveString, unsigned long>::TPair
+            (TCaseInsensitiveString const&, unsigned long const&)
+ 0.00   0.00       29815 TPatriciaTrie::Find(TCaseInsensitiveString const&)
+ 0.00   0.00       29520 TPatriciaTrie::TNode::TNode
+            (TPair<TCaseInsensitiveString, unsigned long> const&)
+ 0.00   0.00       29520 TPair<TCaseInsensitiveString, unsigned long>::TPair
+            (TPair<TCaseInsensitiveString, unsigned long> const&)
+ 0.00   0.00           1 TPatriciaTrie::DestroyTrie(TPatriciaTrie::TNode*)
+ 0.00   0.00           1 TPatriciaTrie::TPatriciaTrie()
+ 0.00   0.00           1 TPatriciaTrie::~TPatriciaTrie()
+\end{alltt}
+
+Видно, что больше всего процессорного времени на вызовы функции \textit{GetBitByIndex}.
+
+\pagebreak

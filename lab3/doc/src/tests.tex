@@ -1,0 +1,153 @@
+\section{Тесты}
+
+Тесты написаны с использованием библиотеки \textit{gtest} 
+
+\begin{lstlisting}[language=C++]
+
+TEST(patricia_test, modifier01) {
+    TPatriciaTrie p;
+    p.Insert({"a", 1});
+    EXPECT_EQ(p.Find("a")->value, 1);
+    EXPECT_EQ(p.Size(), 1);
+}
+
+TEST(patricia_test, modifier02) {
+    TPatriciaTrie p;
+    p.Insert({"a", 1});
+    EXPECT_FALSE(p.Insert({"A", 2}));
+}
+
+TEST(patricia_test, modifier03) {
+    TPatriciaTrie p;
+    p.Insert({"abc", 10});
+    EXPECT_EQ(p.Size(), 1);
+    EXPECT_FALSE(p.Insert({"abc", 20}));
+}
+
+TEST(patricia_test, modifier04) {
+    TPatriciaTrie p;
+    p.Insert({"ab", 10});
+    p.Insert({"abc", 20});
+    EXPECT_EQ(p.Size(), 2);
+    EXPECT_EQ(p.Find("ab")->value, 10);
+    EXPECT_EQ(p.Find("abc")->value, 20);
+}
+\end{lstlisting}
+
+Вывод в консоль после запуска тестов через valgrind
+
+\begin{alltt}
+    ==149268== Memcheck, a memory error detector
+    ==149268== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
+    ==149268== Using Valgrind-3.21.0 and LibVEX; rerun with -h for copyright info
+    ==149268== Command: ./lab2_tests
+    ==149268== 
+    Running main() from /var/tmp/portage/dev-cpp/gtest-1.13.0/work/
+    googletest-1.13.0/googletest/src/gtest_main.cc
+    [==========] Running 38 tests from 2 test suites.
+    [----------] Global test environment set-up.
+    [----------] 2 tests from binary_string_test
+    [ RUN      ] binary_string_test.bitdifftest01
+    [       OK ] binary_string_test.bitdifftest01 (8 ms)
+    [ RUN      ] binary_string_test.bitdifftest02
+    [       OK ] binary_string_test.bitdifftest02 (1 ms)
+    [----------] 2 tests from binary_string_test (13 ms total)
+    
+    [----------] 36 tests from patricia_test
+    [ RUN      ] patricia_test.modifier01
+    [       OK ] patricia_test.modifier01 (5 ms)
+    [ RUN      ] patricia_test.modifier02
+    [       OK ] patricia_test.modifier02 (3 ms)
+    [ RUN      ] patricia_test.modifier03
+    [       OK ] patricia_test.modifier03 (2 ms)
+    [ RUN      ] patricia_test.modifier04
+    [       OK ] patricia_test.modifier04 (3 ms)
+    [ RUN      ] patricia_test.modifier05
+    [       OK ] patricia_test.modifier05 (2 ms)
+    [ RUN      ] patricia_test.modifier06
+    [       OK ] patricia_test.modifier06 (4 ms)
+    [ RUN      ] patricia_test.modifier07
+    [       OK ] patricia_test.modifier07 (3 ms)
+    [ RUN      ] patricia_test.modifier08
+    [       OK ] patricia_test.modifier08 (1 ms)
+    [ RUN      ] patricia_test.modifier09
+    [       OK ] patricia_test.modifier09 (1 ms)
+    [ RUN      ] patricia_test.modifier10
+    [       OK ] patricia_test.modifier10 (4 ms)
+    [ RUN      ] patricia_test.modifier11
+    [       OK ] patricia_test.modifier11 (3 ms)
+    [ RUN      ] patricia_test.modifier12
+    [       OK ] patricia_test.modifier12 (7 ms)
+    [ RUN      ] patricia_test.modifier13
+    [       OK ] patricia_test.modifier13 (6 ms)
+    [ RUN      ] patricia_test.modifier14
+    [       OK ] patricia_test.modifier14 (6 ms)
+    [ RUN      ] patricia_test.modifier15
+    [       OK ] patricia_test.modifier15 (1867 ms)
+    [ RUN      ] patricia_test.modifier16
+    [       OK ] patricia_test.modifier16 (1209 ms)
+    [ RUN      ] patricia_test.modifier17
+    [       OK ] patricia_test.modifier17 (1147 ms)
+    [ RUN      ] patricia_test.modifier18
+    [       OK ] patricia_test.modifier18 (8 ms)
+    [ RUN      ] patricia_test.insert01
+    [       OK ] patricia_test.insert01 (1 ms)
+    [ RUN      ] patricia_test.insert02
+    [       OK ] patricia_test.insert02 (2 ms)
+    [ RUN      ] patricia_test.insert03
+    [       OK ] patricia_test.insert03 (3 ms)
+    [ RUN      ] patricia_test.insert04
+    [       OK ] patricia_test.insert04 (1 ms)
+    [ RUN      ] patricia_test.erase01
+    [       OK ] patricia_test.erase01 (1 ms)
+    [ RUN      ] patricia_test.erase02
+    [       OK ] patricia_test.erase02 (2 ms)
+    [ RUN      ] patricia_test.erase03
+    [       OK ] patricia_test.erase03 (2 ms)
+    [ RUN      ] patricia_test.erase04
+    [       OK ] patricia_test.erase04 (5 ms)
+    [ RUN      ] patricia_test.erase05
+    [       OK ] patricia_test.erase05 (5 ms)
+    [ RUN      ] patricia_test.erase06
+    [       OK ] patricia_test.erase06 (5 ms)
+    [ RUN      ] patricia_test.erase07
+    [       OK ] patricia_test.erase07 (4 ms)
+    [ RUN      ] patricia_test.erase08
+    [       OK ] patricia_test.erase08 (3 ms)
+    [ RUN      ] patricia_test.erase09
+    [       OK ] patricia_test.erase09 (4 ms)
+    [ RUN      ] patricia_test.erase10
+    [       OK ] patricia_test.erase10 (4 ms)
+    [ RUN      ] patricia_test.file01
+    [       OK ] patricia_test.file01 (20 ms)
+    [ RUN      ] patricia_test.file02
+    [       OK ] patricia_test.file02 (7 ms)
+    [ RUN      ] patricia_test.file03
+    [       OK ] patricia_test.file03 (4 ms)
+    [ RUN      ] patricia_test.file04
+    [       OK ] patricia_test.file04 (1189 ms)
+    [----------] 36 tests from patricia_test (5568 ms total)
+    
+    [----------] Global test environment tear-down
+    [==========] 38 tests from 2 test suites ran. (5610 ms total)
+    [  PASSED  ] 38 tests.
+    ==149268== 
+    ==149268== HEAP SUMMARY:
+    ==149268==     in use at exit: 311,335 bytes in 5 blocks
+    ==149268==   total heap usage: 2,043 allocs, 2,038 frees, 928,529 bytes allocated
+    ==149268== 
+    ==149268== LEAK SUMMARY:
+    ==149268==    definitely lost: 0 bytes in 0 blocks
+    ==149268==    indirectly lost: 0 bytes in 0 blocks
+    ==149268==      possibly lost: 0 bytes in 0 blocks
+    ==149268==    still reachable: 311,335 bytes in 5 blocks
+    ==149268==         suppressed: 0 bytes in 0 blocks
+    ==149268== Rerun with --leak-check=full to see details of leaked memory
+    ==149268== 
+    ==149268== For lists of detected and suppressed errors, rerun with: -s
+    ==149268== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+\end{alltt}
+
+Этот вывод valgrind говорит о том, что в программе нет утечек памяти.
+
+\pagebreak

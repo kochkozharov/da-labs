@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
     int64_t rb_ts = 0, pat_ts = 0;
     for (unsigned long i = 0; i < times; ++i) {
         std::string key = GenRandomStr(100);
-        CaseInsensitiveString insKey(key.c_str()); 
+        TCaseInsensitiveString insKey(key.c_str()); 
         {
             start = std::chrono::system_clock::now();
             rb_tree.insert({key, i});

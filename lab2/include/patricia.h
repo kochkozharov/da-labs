@@ -5,11 +5,11 @@
 
 #include "binary_string.h"
 
-struct CFile {
+struct TFile {
     enum class FileType { Save, Load };
     FILE* file;
-    CaseInsensitiveString name;
-    CFile(CaseInsensitiveString s, FileType mode) {
+    TCaseInsensitiveString name;
+    TFile(TCaseInsensitiveString s, FileType mode) {
         name = s;
         if (mode == FileType::Save) {
             file = fopen(s.CStr(), "wb");
@@ -22,12 +22,12 @@ struct CFile {
         return file != nullptr;
     }
     FILE* GetFile() { return file; }
-    CFile() = delete;
-    CFile(const CFile& other) = delete;
-    CFile(CFile&& other) = delete;
-    CFile& operator=(const CFile& other) = delete;
-    CFile& operator=(CFile&& other) = delete;
-    ~CFile() { fclose(file); }
+    TFile() = delete;
+    TFile(const TFile& other) = delete;
+    TFile(TFile&& other) = delete;
+    TFile& operator=(const TFile& other) = delete;
+    TFile& operator=(TFile&& other) = delete;
+    ~TFile() { fclose(file); }
 };
 
 template <class T, class U>
@@ -55,7 +55,7 @@ struct TPair {
 
 class TPatriciaTrie {
    private:
-    using TData = TPair<CaseInsensitiveString, uint64_t>;
+    using TData = TPair<TCaseInsensitiveString, uint64_t>;
 
     struct TNode {
         TData data;
@@ -79,9 +79,9 @@ class TPatriciaTrie {
     TNode* root;
     int size;
 
-    TNode*& FindNode(const CaseInsensitiveString& key, int bitNumber);
+    TNode*& FindNode(const TCaseInsensitiveString& key, int bitNumber);
     TPair<TPatriciaTrie::TNode*, int> FindPreviousNode(
-        const CaseInsensitiveString& key, int bitNumber);
+        const TCaseInsensitiveString& key, int bitNumber);
     void DestroyTrie(TNode* node);
     void TreeToArray(TNode** array, TNode* root, int& id) const;
     void ArrayToTree(TSaveData* array);
@@ -90,8 +90,8 @@ class TPatriciaTrie {
     TPatriciaTrie();
     ~TPatriciaTrie();
     bool Insert(const TData& data);
-    const TData *Find(const CaseInsensitiveString& key);
-    bool Erase(const CaseInsensitiveString& key);
+    const TData *Find(const TCaseInsensitiveString& key);
+    bool Erase(const TCaseInsensitiveString& key);
     bool SaveToFile(FILE* file) const;
     bool LoadFromFile(FILE* file);
     int Size() const;

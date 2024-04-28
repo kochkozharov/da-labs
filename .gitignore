@@ -7,3 +7,4 @@ build
 *.fdb_latexmk
 *.toc
 *.synctex.gz
+*.out

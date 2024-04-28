@@ -3,15 +3,15 @@
 #include <cstdio>
 #include <cstring>
 
-struct CaseInsensitiveString {
+struct TCaseInsensitiveString {
    private:
     static const int KEY_LENGTH = 256;
     char str[KEY_LENGTH + 1];
     int sz = 0;
 
    public:
-    CaseInsensitiveString() = default;
-    CaseInsensitiveString(const char* value) {
+    TCaseInsensitiveString() = default;
+    TCaseInsensitiveString(const char* value) {
         for (int i = 0; i < KEY_LENGTH && value[i] != '\0'; ++i) {
             str[i] = std::tolower(value[i]);
             sz++;
@@ -32,15 +32,15 @@ struct CaseInsensitiveString {
         return true;
     }
     const char* CStr() const { return str; }
-    friend bool operator==(const CaseInsensitiveString& a,
-                           const CaseInsensitiveString& b) {
+    friend bool operator==(const TCaseInsensitiveString& a,
+                           const TCaseInsensitiveString& b) {
         return strcmp(a.str, b.str) == 0;
     }
 };
 
-int GetBitSize(const CaseInsensitiveString& str);
+int GetBitSize(const TCaseInsensitiveString& str);
 
-int BitDifference(const CaseInsensitiveString& a,
-                  const CaseInsensitiveString& b);
+int GetBitDifference(const TCaseInsensitiveString& a,
+                  const TCaseInsensitiveString& b);
 
-bool GetBitByIndex(const CaseInsensitiveString& str, int index);
+bool GetBitByIndex(const TCaseInsensitiveString& str, int index);

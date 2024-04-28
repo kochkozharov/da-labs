@@ -8,15 +8,15 @@
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
-struct CaseInsensitiveString {
+struct TCaseInsensitiveString {
    private:
     static const int KEY_LENGTH = 256;
     char str[KEY_LENGTH + 1];
     int sz = 0;
 
    public:
-    CaseInsensitiveString() = default;
-    CaseInsensitiveString(const char* value) {
+    TCaseInsensitiveString() = default;
+    TCaseInsensitiveString(const char* value) {
         for (int i = 0; i < KEY_LENGTH && value[i] != '\0'; ++i) {
             str[i] = std::tolower(value[i]);
             sz++;
@@ -37,32 +37,32 @@ struct CaseInsensitiveString {
         return true;
     }
     const char* CStr() const { return str; }
-    friend bool operator==(const CaseInsensitiveString& a,
-                           const CaseInsensitiveString& b) {
+    friend bool operator==(const TCaseInsensitiveString& a,
+                           const TCaseInsensitiveString& b) {
         return strcmp(a.str, b.str) == 0;
     }
 };
 
-int GetBitSize(const CaseInsensitiveString& str);
+int GetBitSize(const TCaseInsensitiveString& str);
 
-int BitDifference(const CaseInsensitiveString& a,
-                  const CaseInsensitiveString& b);
+int GetBitDifference(const TCaseInsensitiveString& a,
+                  const TCaseInsensitiveString& b);
 
-bool GetBitByIndex(const CaseInsensitiveString& str, int index);
+bool GetBitByIndex(const TCaseInsensitiveString& str, int index);
 
-int GetBitSize(const CaseInsensitiveString& str) {
+int GetBitSize(const TCaseInsensitiveString& str) {
     return str.size() * CHAR_BIT;
 }
 
-bool GetBitByIndex(const CaseInsensitiveString& str, int index) {
+bool GetBitByIndex(const TCaseInsensitiveString& str, int index) {
     const char* ptr = str.CStr();
     int byteIndex = index / CHAR_BIT;
     int bitIndex = index % CHAR_BIT;
     return ptr[byteIndex] & (1 << bitIndex);
 }
 
-int BitDifference(const CaseInsensitiveString& a,
-                  const CaseInsensitiveString& b) {
+int GetBitDifference(const TCaseInsensitiveString& a,
+                  const TCaseInsensitiveString& b) {
     int n = 0;
     for (int i = 0; i < MAX(GetBitSize(a), GetBitSize(b)); ++i) {
         if (GetBitByIndex(a, i) != GetBitByIndex(b, i)) {
@@ -76,11 +76,11 @@ int BitDifference(const CaseInsensitiveString& a,
     return n;
 }
 
-struct CFile {
+struct TFile {
     enum class FileType { Save, Load };
     FILE* file;
-    CaseInsensitiveString name;
-    CFile(CaseInsensitiveString s, FileType mode) {
+    TCaseInsensitiveString name;
+    TFile(TCaseInsensitiveString s, FileType mode) {
         name = s;
         if (mode == FileType::Save) {
             file = fopen(s.CStr(), "wb");
@@ -90,12 +90,12 @@ struct CFile {
     }
     bool check() { return file != nullptr; }
     FILE* GetFile() { return file; }
-    CFile() = delete;
-    CFile(const CFile& other) = delete;
-    CFile(CFile&& other) = delete;
-    CFile& operator=(const CFile& other) = delete;
-    CFile& operator=(CFile&& other) = delete;
-    ~CFile() { fclose(file); }
+    TFile() = delete;
+    TFile(const TFile& other) = delete;
+    TFile(TFile&& other) = delete;
+    TFile& operator=(const TFile& other) = delete;
+    TFile& operator=(TFile&& other) = delete;
+    ~TFile() { fclose(file); }
 };
 
 template <class T, class U>
@@ -123,7 +123,7 @@ struct TPair {
 
 class TPatriciaTrie {
    private:
-    using TData = TPair<CaseInsensitiveString, uint64_t>;
+    using TData = TPair<TCaseInsensitiveString, uint64_t>;
 
     struct TNode {
         TData data;
@@ -147,9 +147,9 @@ class TPatriciaTrie {
     TNode* root;
     int size;
 
-    TNode*& FindNode(const CaseInsensitiveString& key, int bitNumber);
+    TNode*& FindNode(const TCaseInsensitiveString& key, int bitNumber);
     TPair<TPatriciaTrie::TNode*, int> FindPreviousNode(
-        const CaseInsensitiveString& key, int bitNumber);
+        const TCaseInsensitiveString& key, int bitNumber);
     void DestroyTrie(TNode* node);
     void TreeToArray(TNode** array, TNode* root, int& id) const;
     void ArrayToTree(TSaveData* array);
@@ -158,8 +158,8 @@ class TPatriciaTrie {
     TPatriciaTrie();
     ~TPatriciaTrie();
     bool Insert(const TData& data);
-    const TData* Find(const CaseInsensitiveString& key);
-    bool Erase(const CaseInsensitiveString& key);
+    const TData* Find(const TCaseInsensitiveString& key);
+    bool Erase(const TCaseInsensitiveString& key);
     bool SaveToFile(FILE* file) const;
     bool LoadFromFile(FILE* file);
     int Size() const;
@@ -189,7 +189,7 @@ void TPatriciaTrie::DestroyTrie(TNode* node) {
 TPatriciaTrie::~TPatriciaTrie() { DestroyTrie(root); }
 
 TPair<TPatriciaTrie::TNode*, int> TPatriciaTrie::FindPreviousNode(
-    const CaseInsensitiveString& key, int bitNumber) {
+    const TCaseInsensitiveString& key, int bitNumber) {
     if (root == nullptr) {
         return {root, -1};
     }
@@ -205,7 +205,7 @@ TPair<TPatriciaTrie::TNode*, int> TPatriciaTrie::FindPreviousNode(
     return {previous, currentDifferentBit};
 }
 
-TPatriciaTrie::TNode*& TPatriciaTrie::FindNode(const CaseInsensitiveString& key,
+TPatriciaTrie::TNode*& TPatriciaTrie::FindNode(const TCaseInsensitiveString& key,
                                                int bitNumber) {
     TPair<TNode*, int> previous = FindPreviousNode(key, bitNumber);
     if (previous.key == nullptr) {
@@ -224,7 +224,7 @@ bool TPatriciaTrie::Insert(const TData& data) {
         return true;
     }
     TNode* found = FindNode(data.key, -1);
-    int bitIndex = BitDifference(data.key, found->data.key);
+    int bitIndex = GetBitDifference(data.key, found->data.key);
     if (bitIndex == -1) {
         return false;
     }
@@ -240,20 +240,20 @@ bool TPatriciaTrie::Insert(const TData& data) {
 }
 
 const TPatriciaTrie::TData* TPatriciaTrie::Find(
-    const CaseInsensitiveString& key) {
+    const TCaseInsensitiveString& key) {
     TNode* found = FindNode(key, -1);
-    if (found == nullptr || BitDifference(key, found->data.key) != -1) {
+    if (found == nullptr || GetBitDifference(key, found->data.key) != -1) {
         return nullptr;
     }
     return &found->data;
 }
 
-bool TPatriciaTrie::Erase(const CaseInsensitiveString& key) {
+bool TPatriciaTrie::Erase(const TCaseInsensitiveString& key) {
     TNode*& deleting = FindNode(key, -1);
     if (deleting == nullptr) {
         return false;
     }
-    if (BitDifference(key, deleting->data.key) != -1) {
+    if (GetBitDifference(key, deleting->data.key) != -1) {
         return false;
     }
     --size;
@@ -374,11 +374,11 @@ bool TPatriciaTrie::LoadFromFile(FILE* file) {
 }
 
 int main() {
-    CaseInsensitiveString input;
+    TCaseInsensitiveString input;
     TPatriciaTrie t;
     while (input.Scan()) {
         if (input == "+") {
-            CaseInsensitiveString key;
+            TCaseInsensitiveString key;
             uint64_t value;
             key.Scan();
             scanf("%" SCNu64, &value);
@@ -387,19 +387,19 @@ int main() {
                 continue;
             }
         } else if (input == "-") {
-            CaseInsensitiveString key;
+            TCaseInsensitiveString key;
             key.Scan();
             if (!t.Erase(key)) {
                 printf("NoSuchWord\n");
                 continue;
             }
         } else if (input == "!") {
-            CaseInsensitiveString cmd;
+            TCaseInsensitiveString cmd;
             cmd.Scan();
             if (cmd == "Save") {
-                CaseInsensitiveString path;
+                TCaseInsensitiveString path;
                 path.Scan();
-                CFile file(path, CFile::FileType::Save);
+                TFile file(path, TFile::FileType::Save);
                 if (!file.check()) {
                     fprintf(stderr, "ERROR: Bad File\n");
                     continue;
@@ -409,9 +409,9 @@ int main() {
                     continue;
                 }
             } else if (cmd == "Load") {
-                CaseInsensitiveString path;
+                TCaseInsensitiveString path;
                 path.Scan();
-                CFile file(path, CFile::FileType::Load);
+                TFile file(path, TFile::FileType::Load);
                 if (!file.check()) {
                     fprintf(stderr, "ERROR: Bad File\n");
                     continue;
@@ -422,7 +422,7 @@ int main() {
                 }
             }
         } else {
-            const TPair<CaseInsensitiveString, uint64_t>* p;
+            const TPair<TCaseInsensitiveString, uint64_t>* p;
             p = t.Find(input.CStr());
             if (!p) {
                 printf("NoSuchWord\n");

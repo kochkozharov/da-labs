@@ -24,7 +24,7 @@ int main() {
                 rb_ts += std::chrono::duration_cast<duration_t>( end - start ).count();
             }
             {
-                CaseInsensitiveString convKey(key.c_str());
+                TCaseInsensitiveString convKey(key.c_str());
                 start = std::chrono::system_clock::now();
                 try{
                     t.Insert({convKey, value});

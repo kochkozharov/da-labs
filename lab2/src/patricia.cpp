@@ -24,7 +24,7 @@ void TPatriciaTrie::DestroyTrie(TNode* node) {
 TPatriciaTrie::~TPatriciaTrie() { DestroyTrie(root); }
 
 TPair<TPatriciaTrie::TNode*, int> TPatriciaTrie::FindPreviousNode(
-    const CaseInsensitiveString& key, int bitNumber) {
+    const TCaseInsensitiveString& key, int bitNumber) {
     if (root == nullptr) {
         return {root, -1};
     }
@@ -40,7 +40,7 @@ TPair<TPatriciaTrie::TNode*, int> TPatriciaTrie::FindPreviousNode(
     return {previous, currentDifferentBit};
 }
 
-TPatriciaTrie::TNode*& TPatriciaTrie::FindNode(const CaseInsensitiveString& key,
+TPatriciaTrie::TNode*& TPatriciaTrie::FindNode(const TCaseInsensitiveString& key,
                                                int bitNumber) {
     TPair<TNode*, int> previous = FindPreviousNode(key, bitNumber);
     if (previous.key == nullptr) {
@@ -59,7 +59,7 @@ bool TPatriciaTrie::Insert(const TData& data) {
         return true;
     }
     TNode* found = FindNode(data.key, -1);
-    int bitIndex = BitDifference(data.key, found->data.key);
+    int bitIndex = GetBitDifference(data.key, found->data.key);
     if (bitIndex == -1) {
         return false;
     }
@@ -75,20 +75,20 @@ bool TPatriciaTrie::Insert(const TData& data) {
 }
 
 const TPatriciaTrie::TData* TPatriciaTrie::Find(
-    const CaseInsensitiveString& key) {
+    const TCaseInsensitiveString& key) {
     TNode* found = FindNode(key, -1);
-    if (found == nullptr || BitDifference(key, found->data.key) != -1) {
+    if (found == nullptr || GetBitDifference(key, found->data.key) != -1) {
         return nullptr;
     }
     return &found->data;
 }
 
-bool TPatriciaTrie::Erase(const CaseInsensitiveString& key) {
+bool TPatriciaTrie::Erase(const TCaseInsensitiveString& key) {
     TNode*& deleting = FindNode(key, -1);
     if (deleting == nullptr) {
         return false;
     }
-    if (BitDifference(key, deleting->data.key) != -1) {
+    if (GetBitDifference(key, deleting->data.key) != -1) {
         return false;
     }
     --size;

@@ -4,19 +4,19 @@
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
-int GetBitSize(const CaseInsensitiveString& str) {
+int GetBitSize(const TCaseInsensitiveString& str) {
     return str.size() * CHAR_BIT;
 }
 
-bool GetBitByIndex(const CaseInsensitiveString& str, int index) {
+bool GetBitByIndex(const TCaseInsensitiveString& str, int index) {
     const char* ptr = str.CStr();
     int byteIndex = index / CHAR_BIT;
     int bitIndex = index % CHAR_BIT;
     return ptr[byteIndex] & (1 << bitIndex);
 }
 
-int BitDifference(const CaseInsensitiveString& a,
-                  const CaseInsensitiveString& b) {
+int GetBitDifference(const TCaseInsensitiveString& a,
+                  const TCaseInsensitiveString& b) {
     int n = 0;
     for (int i = 0; i < MAX(GetBitSize(a), GetBitSize(b)); ++i) {
         if (GetBitByIndex(a, i) != GetBitByIndex(b, i)) {

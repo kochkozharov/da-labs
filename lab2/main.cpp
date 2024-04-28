@@ -3,11 +3,11 @@
 #include "patricia.h"
 
 int main() {
-    CaseInsensitiveString input;
+    TCaseInsensitiveString input;
     TPatriciaTrie t;
     while (input.Scan()) {
         if (input == "+") {
-            CaseInsensitiveString key;
+            TCaseInsensitiveString key;
             uint64_t value;
             key.Scan();
             scanf("%" SCNu64, &value);
@@ -16,19 +16,19 @@ int main() {
                 continue;
             }
         } else if (input == "-") {
-            CaseInsensitiveString key;
+            TCaseInsensitiveString key;
             key.Scan();
             if (!t.Erase(key)) {
                 printf("NoSuchWord\n");
                 continue;
             }
         } else if (input == "!") {
-            CaseInsensitiveString cmd;
+            TCaseInsensitiveString cmd;
             cmd.Scan();
             if (cmd == "Save") {
-                CaseInsensitiveString path;
+                TCaseInsensitiveString path;
                 path.Scan();
-                CFile file(path, CFile::FileType::Save);
+                TFile file(path, TFile::FileType::Save);
                 if (!file.check()) {
                     fprintf(stderr, "ERROR: Bad File\n");
                     continue;
@@ -38,9 +38,9 @@ int main() {
                     continue;
                 }
             } else if (cmd == "Load") {
-                CaseInsensitiveString path;
+                TCaseInsensitiveString path;
                 path.Scan();
-                CFile file(path, CFile::FileType::Load);
+                TFile file(path, TFile::FileType::Load);
                 if (!file.check()) {
                     fprintf(stderr, "ERROR: Bad File\n");
                     continue;
@@ -51,7 +51,7 @@ int main() {
                 }
             }
         } else {
-            const TPair<CaseInsensitiveString, uint64_t>* p;
+            const TPair<TCaseInsensitiveString, uint64_t>* p;
             p = t.Find(input.CStr());
             if (!p) {
                 printf("NoSuchWord\n");

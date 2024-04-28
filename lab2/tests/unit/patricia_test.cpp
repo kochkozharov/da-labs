@@ -422,11 +422,11 @@ TEST(patricia_test, erase10) {
 TEST(patricia_test, file01) {
     TPatriciaTrie p;
     {
-        CFile out("patricia_test.txt", CFile::FileType::Save);
+        TFile out("patricia_test.txt", TFile::FileType::Save);
         p.Insert({"a", 1});
         p.SaveToFile(out.GetFile());
     }
-    CFile in("patricia_test.txt", CFile::FileType::Load);
+    TFile in("patricia_test.txt", TFile::FileType::Load);
     p.LoadFromFile(in.GetFile());
     EXPECT_EQ(p.Find("a")->value, 1);
     // remove("patricia_test.txt");
@@ -434,12 +434,12 @@ TEST(patricia_test, file01) {
 TEST(patricia_test, file02) {
     TPatriciaTrie p;
     {
-        CFile out("patricia_test.txt", CFile::FileType::Save);
+        TFile out("patricia_test.txt", TFile::FileType::Save);
         p.Insert({"a", 1});
         p.SaveToFile(out.GetFile());
         p.Insert({"b", 2});
     }
-    CFile in("patricia_test.txt", CFile::FileType::Load);
+    TFile in("patricia_test.txt", TFile::FileType::Load);
     p.LoadFromFile(in.GetFile());
     EXPECT_FALSE(p.Find("b"));
     remove("patricia_test.txt");
@@ -448,7 +448,7 @@ TEST(patricia_test, file02) {
 TEST(patricia_test, file03) {
     TPatriciaTrie p;
     {
-        CFile out("patricia_test.txt", CFile::FileType::Save);
+        TFile out("patricia_test.txt", TFile::FileType::Save);
         p.Insert({"a", 1});
         p.Insert({"d", 2});
         p.Insert({"c", 3});
@@ -456,7 +456,7 @@ TEST(patricia_test, file03) {
         p.SaveToFile(out.GetFile());
         p.Erase("f");
     }
-    CFile in("patricia_test.txt", CFile::FileType::Load);
+    TFile in("patricia_test.txt", TFile::FileType::Load);
     p.LoadFromFile(in.GetFile());
     EXPECT_EQ(p.Find("f")->value, 4);
     remove("patricia_test.txt");
@@ -466,14 +466,14 @@ TEST(patricia_test, file04) {
     TPatriciaTrie p;
     std::string s = "";
     {
-        CFile out("patricia_test.txt", CFile::FileType::Save);
+        TFile out("patricia_test.txt", TFile::FileType::Save);
         for (int i = 0; i < 250; ++i) {
             s += 'a';
             p.Insert({s.c_str(), static_cast<uint64_t>(i)});
         }
         p.SaveToFile(out.GetFile());
     }
-    CFile in("patricia_test.txt", CFile::FileType::Load);
+    TFile in("patricia_test.txt", TFile::FileType::Load);
     p.LoadFromFile(in.GetFile());
     s = "";
     for (int i = 0; i < 250; ++i) {

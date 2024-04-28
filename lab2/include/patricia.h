@@ -29,7 +29,6 @@ struct TPair {
     }
 };
 
-
 class TPatriciaTrie {
    private:
     using TData = TPair<CaseInsensitiveString, uint64_t>;
@@ -58,8 +57,8 @@ class TPatriciaTrie {
     int size;
 
     TNode*& FindNode(const CaseInsensitiveString& key, int bitNumber);
-    TPair<TPatriciaTrie::TNode*, int> FindPreviousNode(const CaseInsensitiveString& key,
-                                                       int bitNumber);
+    TPair<TPatriciaTrie::TNode*, int> FindPreviousNode(
+        const CaseInsensitiveString& key, int bitNumber);
     void DestroyTrie(TNode* node);
     void TreeToArray(TNode** array, TNode* root, int& id) const;
     void ArrayToTree(TSaveData* array);

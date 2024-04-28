@@ -14,25 +14,27 @@ void TPatriciaTrie::DestroyTrie(TNode* node) {
     if (node->children[0]->bitNumber > node->bitNumber) {
         DestroyTrie(node->children[0]);
     }
-    if (node->children[1] != nullptr && node->children[1]->bitNumber > node->bitNumber) {
+    if (node->children[1] != nullptr &&
+        node->children[1]->bitNumber > node->bitNumber) {
         DestroyTrie(node->children[1]);
     }
     delete node;
 }
 
-TPatriciaTrie::~TPatriciaTrie() {
-    DestroyTrie(root);
-}
+TPatriciaTrie::~TPatriciaTrie() { DestroyTrie(root); }
 
-// if bitNumber == -1, it just finds node by key as usual; otherwise, it finds a place for new node with bitNumber
-TPair<TPatriciaTrie::TNode*, int> TPatriciaTrie::FindPreviousNode(const CaseInsensitiveString& key, int bitNumber) {
+// if bitNumber == -1, it just finds node by key as usual; otherwise, it finds a
+// place for new node with bitNumber
+TPair<TPatriciaTrie::TNode*, int> TPatriciaTrie::FindPreviousNode(
+    const CaseInsensitiveString& key, int bitNumber) {
     if (root == nullptr) {
         return {root, -1};
     }
     TNode* previous = root;
     int currentDifferentBit = 0;
     TNode* current = previous->children[currentDifferentBit];
-    while (current->bitNumber > previous->bitNumber && (current->bitNumber < bitNumber || bitNumber == -1)) {
+    while (current->bitNumber > previous->bitNumber &&
+           (current->bitNumber < bitNumber || bitNumber == -1)) {
         currentDifferentBit = GetBitByIndex(key, current->bitNumber);
         previous = current;
         current = previous->children[currentDifferentBit];
@@ -40,8 +42,10 @@ TPair<TPatriciaTrie::TNode*, int> TPatriciaTrie::FindPreviousNode(const CaseInse
     return {previous, currentDifferentBit};
 }
 
-// if bitNumber == -1, it just finds node by key as usual; otherwise, it finds a place for new node with bitNumber
-TPatriciaTrie::TNode*& TPatriciaTrie::FindNode(const CaseInsensitiveString& key, int bitNumber) {
+// if bitNumber == -1, it just finds node by key as usual; otherwise, it finds a
+// place for new node with bitNumber
+TPatriciaTrie::TNode*& TPatriciaTrie::FindNode(const CaseInsensitiveString& key,
+                                               int bitNumber) {
     TPair<TNode*, int> previous = FindPreviousNode(key, bitNumber);
     if (previous.key == nullptr) {
         return root;
@@ -73,7 +77,8 @@ void TPatriciaTrie::Insert(const TData& data) {
     ++size;
 }
 
-const TPatriciaTrie::TData& TPatriciaTrie::Find(const CaseInsensitiveString& key) {
+const TPatriciaTrie::TData& TPatriciaTrie::Find(
+    const CaseInsensitiveString& key) {
     TNode* found = FindNode(key, -1);
     if (found == nullptr || BitDifference(key, found->data.key) != -1) {
         throw std::logic_error("NoSuchWord");
@@ -90,7 +95,8 @@ void TPatriciaTrie::Erase(const CaseInsensitiveString& key) {
         throw std::logic_error("NoSuchWord");
     }
     --size;
-    if (deleting->children[0] == deleting || deleting->children[1] == deleting) {
+    if (deleting->children[0] == deleting ||
+        deleting->children[1] == deleting) {
         // deleting has selfpointer
         if (deleting == root) {
             delete deleting;
@@ -99,11 +105,11 @@ void TPatriciaTrie::Erase(const CaseInsensitiveString& key) {
         }
         TNode*& deletingParentPointer = FindNode(key, deleting->bitNumber);
         if (deleting == deleting->children[0]) {
-            deletingParentPointer = deleting->children[1];   // non-self pointer
+            deletingParentPointer = deleting->children[1];  // non-self pointer
             delete deleting;
             return;
         }
-        deletingParentPointer = deleting->children[0];      // non-self pointer
+        deletingParentPointer = deleting->children[0];  // non-self pointer
         delete deleting;
         return;
     }
@@ -118,9 +124,7 @@ void TPatriciaTrie::Erase(const CaseInsensitiveString& key) {
     delete q.key;
 }
 
-int TPatriciaTrie::Size() const {
-    return size;
-}
+int TPatriciaTrie::Size() const { return size; }
 
 void TPatriciaTrie::TreeToArray(TNode** array, TNode* root, int& id) const {
     if (root == nullptr) {
@@ -128,10 +132,12 @@ void TPatriciaTrie::TreeToArray(TNode** array, TNode* root, int& id) const {
     }
     array[id] = root;
     root->id = id;
-    if (root->children[0] != nullptr && root->children[0]->bitNumber > root->bitNumber) {
+    if (root->children[0] != nullptr &&
+        root->children[0]->bitNumber > root->bitNumber) {
         TreeToArray(array, root->children[0], ++id);
     }
-    if (root->children[1] != nullptr && root->children[1]->bitNumber > root->bitNumber) {
+    if (root->children[1] != nullptr &&
+        root->children[1]->bitNumber > root->bitNumber) {
         TreeToArray(array, root->children[1], ++id);
     }
 }
@@ -148,7 +154,7 @@ void TPatriciaTrie::SaveToFile(std::ofstream& file) const {
         data.keyValue.value = nodes[i]->data.value;
         data.bitNumber = nodes[i]->bitNumber;
         data.leftId = nodes[i]->children[0]->id;
-        if (i == 0) {    // root
+        if (i == 0) {  // root
             data.rightId = -1;
         } else {
             data.rightId = nodes[i]->children[1]->id;
@@ -158,7 +164,7 @@ void TPatriciaTrie::SaveToFile(std::ofstream& file) const {
 }
 
 void TPatriciaTrie::ArrayToTree(TSaveData* array) {
-    TNode* nodes[size]; //FIX
+    TNode* nodes[size];  // FIX
     for (int i = 0; i < size; ++i) {
         nodes[i] = new TNode;
         nodes[i]->data = {array[i].keyValue.key, array[i].keyValue.value};

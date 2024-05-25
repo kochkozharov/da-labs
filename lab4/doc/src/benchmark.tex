@@ -1,0 +1,25 @@
+\section{Тест производительности}
+
+Тест производительности представляет из себя следующее: 
+Сравнение алгоритма для поиска всех вхождений случайного паттерна в случайный текст используя
+функцию std::search и используя Z-функцию.
+
+\begin{alltt}
+ivan@asus-vivobook ~/c/d/b/lab4 (master)> ./lab4_benchmark 100000
+matches: 3
+std: 618
+z-function: 2689
+ivan@asus-vivobook ~/c/d/b/lab4 (master)> ./lab4_benchmark 1000000
+matches: 11
+std: 6345
+z-function: 27367
+ivan@asus-vivobook ~/c/d/b/lab4 (master)> ./lab4_benchmark 10000000
+matches: 159
+std: 60546
+z-function: 260870
+\end{alltt}
+
+Как видно, алгоритм из STL обгоняет базовый алгоритм Z-блоков, что говорит о несовершенстве этого алгоритма, даже
+с учетом эффективного вычисления Z-функции.
+
+\pagebreak

@@ -1,0 +1,114 @@
+\section{Описание}
+Требуется написать реализацию Z-функции.
+
+Как сказано в \cite{Gusfield}: \enquote{$Z_i(S)$ -- это длина наибольшего префикса $S[i..|S|]$, совпадающего с префиксом S}.
+
+\section{Исходный код}
+Будем хранить индексы L и R, обозначающие начало и конец префикса с наибольшим найденным на данный момент значением R. Изначально L = R = 0. 
+Пусть нам известны значения Z-функции для позиций $1..i - 1$. Попробуем вычислить значение Z-функции для позиции i. Если $i \in [L..R]$, 
+рассмотрим значение Z-функции для позиции j = i - L. Если $i + Z [ j ] \leq R$, то $Z [ i ] = Z [ j ]$, так как мы находимся в подстроке,
+совпадающей с префиксом всей строки. Если же i + Z [ j ]  R, то необходимо досчитать значение Z[i] простым циклом, перебирающим символы 
+после R, пока не найдется символ, не совпадающий с соответствующим символом из префикса. После этого изменяем, значение L на i и значение 
+R на номер последнего символа, совпавшего с соответствующим символом из префикса.
+
+Если $i \notin [L..R]$, то считаем значение Z[i] простым циклом, сравнивающим символы подстроки начинающейся с i-го
+символа и соответствующие символы из префикса. Когда будет найдено несоответствие или будет достигнут конец строки, изменяем значение L 
+на i и значение R на номер последнего символа, совпавшего с соответствующим символом из префикса. 
+
+Реализация самого алгоритма z-блоков.
+
+Образуем строку s = pattern + \# + text, где \# — символ, не встречающийся ни в text, ни в pattern. Вычисляем Z-функцию от этой строки.
+В полученном массиве, в позициях в которых значение Z-функции равно |pattern|, по определению начинается подстрока, совпадающая с pattern. 
+
+Полученные абсолютные индексы начала совпадающей подстроки переводятся в относительные коордианты вида номер строки и номер числа в начинающейся
+используя массив префиксных сумм и бинарный поиск по нему. 
+
+\section{Асимптотика}
+Время работы алгоритма, вычисляющего значение Z-функции строки S оценивается в O (|S|). Докажем это.
+Рассмотрим i-й символ строки. В алгоритме он рассматривается не более двух раз: первый раз, когда попадает в отрезок [L..R],
+и второй раз при вычислении Z[i]. Таким образом цикл обрабатывает не более 2|S| итераций. 
+
+\section{Листинги}
+
+\begin{lstlisting}[language=C++]
+
+using ll = long long;
+
+std::size_t RelativeToAbsolute(const std::pair<size_t, size_t> &relativeIndex,
+                               const std::vector<std::size_t> &prefixSums) {
+    return prefixSums[relativeIndex.first] + relativeIndex.second;
+}
+
+std::pair<size_t, size_t>
+AbsoluteToRelative(std::size_t absoluteIndex,
+                   const std::vector<std::size_t> &prefixSums) {
+    size_t lineIndex = std::lower_bound(prefixSums.begin(), prefixSums.end(),
+                                        absoluteIndex + 1) -
+                       prefixSums.begin();
+    size_t numberIndex =
+        absoluteIndex - (lineIndex > 0 ? prefixSums[lineIndex - 1] : 0) + 1;
+    return std::make_pair(lineIndex, numberIndex);
+}
+
+std::vector<std::size_t> ZFunction(const std::vector<ll> &arr) {
+    std::size_t n = arr.size();
+    std::vector<std::size_t> z(arr.size());
+    for (std::size_t i = 1, l = 0, r = 0; i < arr.size(); ++i) {
+        if (i <= r) {
+            z[i] = std::min(r - i + 1, z[i - l]);
+        }
+        while (i + z[i] < n && arr[z[i]] == arr[i + z[i]]) {
+            ++z[i];
+        }
+        if (i + z[i] - 1 > r) {
+            l = i;
+            r = i + z[i] - 1;
+        }
+    }
+    return z;
+}
+
+int main() {
+    std::vector<ll> preparedText;
+    std::string line;
+    std::getline(std::cin, line);
+    uint num;
+    std::istringstream iss{line};
+    std::size_t patternSize = 0;
+    while (iss >> num) {
+        patternSize++;
+        preparedText.push_back(num);
+    }
+    preparedText.push_back(-1);
+    std::vector<std::size_t> prefixSums(1);
+    while (std::getline(std::cin, line)) {
+        std::istringstream iss{line};
+        std::size_t cnt = 0;
+        while (iss >> num) {
+            preparedText.push_back(num);
+            cnt++;
+        }
+        prefixSums.push_back(prefixSums.back()+cnt);
+    }
+
+    std::vector<std::size_t> zFun = ZFunction(preparedText);
+    for (std::size_t i = patternSize+1; i < zFun.size(); ++i) {
+        if (zFun[i] == patternSize) {
+            std::pair<size_t, size_t> match = AbsoluteToRelative(i-patternSize-1, prefixSums);
+            std::cout << match.first << ", " << match.second;
+            std::cout << '\n';
+        }
+    }
+}
+\end{lstlisting}
+
+\section{Консоль}
+\begin{alltt}
+ivan@asus-vivobook ~/c/d/b/lab4 (master)> ./lab4
+11 45 11 45 90
+0011 45 011 0045 11 45 90    11
+45 11 45 90
+1, 3
+1, 8
+\end{alltt}
+\pagebreak

@@ -8,191 +8,200 @@
 \usepackage[utf8]{inputenc}
 \usepackage[russian]{babel}
 \usepackage{amsmath}
+\usepackage{pgfplots}
+
 
 \begin{document}
 
-\section*{Лабораторная работа №\,7 по курсу дискрeтного анализа: Динамическое программирование}
+\section*{Лабораторная работа №\,8 по курсу дискрeтного анализа: Жадные алгоритмы}
 
 Выполнил студент группы М80-308Б-22 МАИ \textit{Кочкожаров Иван}.
 
-\subsection*{Услови}
+\subsection*{Условие}
 
 Краткое описание задачи:
-\begin{enumerate}
-    \item При помощи метода динамического программирования разработать алгоритм решения задачи, определяемой
-    своим вариантом
-    \item \textit{Вариант:} Количество чисел
-    \item \textit{Задача:} Задано целое число $n$. Необходимо найти количество натуральных (без нуля) чисел, которые меньше $n$ по значению \textbf{и} меньше $n$ лексикографически (если сравнивать два числа как строки), а также делятся на $m$ без остатка.
-\end{enumerate}
+
+Разработать жадный алгоритм решения задачи, определяемой своим
+вариантом. Доказать его корректность, оценить скорость и объём
+затрачиваемой оперативной памяти.
+
+Реализовать программу на языке C или C++, соответствующую
+построенному алгоритму. Формат входных и выходных данных описан в
+варианте задания.
+
+Бычкам дают пищевые добавки, чтобы ускорить их рост. Каждая добавка
+содержит некоторые из $N$ действующих веществ. Соотношения количеств веществ в добавках могут отличаться. Воздействие добавки
+определяется как
+
+$c_1\times a_1 + c_2 \times a_2 +·\ldots +c_n \times a_n,$
+
+где $a_i$ — количество $i$-го вещества в добавке, $c_i$ — неизвестный
+коэффициент, связанный с веществом и не зависящий от добавки. Чтобы
+найти неизвестные коэффициенты $c_i$, Биолог может измерить
+воздействие любой добавки, использовав один её мешок. Известна цена
+мешка каждой из $M$ ($M \geq N$ ) различных добавок. Нужно помочь Биологу
+подобрать самый дешевый набор добавок, позволяющий найти
+коэффициенты $c_i$. Возможно, соотношения веществ в добавках таковы,
+что определить коэффициенты нельзя.
 
 \subsection*{Метод решения}
 
-Будем на каждой итерации цикла применять функцию CountMultiplesInRange(long long l, long long r, int m) для подсчета чисел, делящихся на m без остатка, лежащих в диапазоне $l$ и $r$ . Динамическое программирование основано на переходе из состояния $dp[n][m]$, в состояние $dp[n/10][m]$ и так далее, пока n не станет меньше 10. 
-Это решение можно представить рекурсивной функцией: dp[n][m] = CountMultiplesInRange(pow(10, len(n)-1), n, m) + dp[n/10][m]. Таким образом мы подсчитываем все CountMultiplesInRange(pow(10, len(n)-1), n, m) для всех префиксов числа n, очевидно что эти префиксы меньше и лексикографически меньше n, и суммируем все эти результаты. Это и будет ответом.
-Сложность алгоритма - O(len(n))
+Жадные алгоритмы применимы в том случае, если принятие наиболее 
+оптимального решения на каждом шаге решения задачи означает наиболее 
+оптимальное решение задачи в целом. К этой задаче можно применить жадный 
+алгоритм, поскольку чтобы её решить, мы должны отобрать ровно $N$ добавок, 
+а значит эти добавки должны быть наиболее дешёвыми. Идея решения в том, 
+чтобы привести матрицу, составленную из соотношений веществ (для этого вызывается функция SubtractRows), к ступенчатому 
+виду, при этом наверх продвигать строки, характеризующие наиболее дешёвые 
+добавки (строчка ищется функцией FindLowestPriceRow), тогда $N$ верхних строк и будут ответом к задаче. Для получения 
+ответа, необходимо сохранять номера добавок. Таким образом, алгоритм заключается в прохождении по всем добавкам,
+вызывая функции FindLowestPriceRow и выдвижении найденой строчки вперед и вычитанию этой строчки из последующих, для приведения матрицы к ступенчатому виду
+
+Итоговая сложность
 
 \subsection*{Описание программы}
 
 Разделение по файлам, описание основных типов данных и функций. \\
-\begin{itemize}
-    \item
-        Реализация алгоритма
-        \begin{lstlisting}[language=C++]
+
+\begin{lstlisting}[language=C++]
+#include <algorithm>
 #include <iostream>
-#include <cmath>
+#include <vector>
 
-int LengthOfNum(long long x){
-    int len=1;
-    while(x>9){ len++; x/=10; }
-    return len;
+constexpr const int MAX_NUM = 50;
+
+struct Addition {
+    Addition(size_t n) : ratios(n) {}
+    std::vector<double> ratios;
+    int price;
+    int index;
+};
+
+int FindLowestPriceRow(std::vector<Addition> &v, int t) {
+    size_t m = v.size();
+    size_t n = v[0].ratios.size();
+    int minPrice = MAX_NUM + 1;
+    int index = -1;
+    for (int i = t; i < m; ++i) {
+        if ((v[i].ratios[t] != 0.0) && (v[i].price < minPrice)) {
+            index = i;
+            minPrice = v[i].price;
+        }
+    }
+    return index;
 }
 
-long long CountMultiplesInRange(long long l, long long r, int m) {
-    long long firstMultiple = (l % m == 0) ? l : l + (m - l % m);
-    long long lastMultiple = (r % m == 0) ? r : r - (r % m);
-    if (firstMultiple > lastMultiple) {
-        return 0;
+void SubtractRows(std::vector<Addition> &v, int t) {
+    size_t m = v.size();
+    size_t n = v[0].ratios.size();
+    for (int i = t + 1; i < m; ++i) {
+        double coeff = v[i].ratios[t] / v[t].ratios[t];
+        for (int j = t; j < n; ++j) {
+            v[i].ratios[j] -= v[t].ratios[j] * coeff;
+        }
     }
-    return (lastMultiple - firstMultiple) / m + 1;
-}
-
-long long Solve(long long n, int m) {
-    int length = LengthOfNum(n);
-    long long result = 0;
-    long long a = pow(10, length-1);
-    long long b = n; 
-    for (int i = 0; i < length; ++i) {
-        result += CountMultiplesInRange(a, b, m);
-        a /= 10;
-        b /= 10;
-    }
-    if (n % m == 0) {
-        return result-1;
-    }
-    return result;
 }
 
 int main() {
-    long long n;
-    int m;
-    std::cin >> n >> m;
-    std::cout << Solve(n, m) << std::endl;
+    int n, m;
+    std::cin >> m >> n;
+    std::vector<int> res;
+    std::vector<Addition> additions(m, Addition(n));
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < n; ++j) {
+            std::cin >> additions[i].ratios[j];
+        }
+        std::cin >> additions[i].price;
+        additions[i].index = i;
+    }
+    for (int i = 0; i < n; ++i) {
+        int index = FindLowestPriceRow(additions, i);
+        if (index == -1) {
+            std::cout << "-1" << std::endl;
+            return 0;
+        }
+
+        std::swap(additions[i], additions[index]);
+        res.push_back(additions[i].index);
+        SubtractRows(additions, i);
+    }
+
+    std::sort(res.begin(), res.end());
+    for (auto r : res) {
+        std::cout << r + 1 << ' ';
+    }
+    std::cout << '\n';
     return 0;
 }
-        \end{lstlisting}
-\end{itemize}
+\end{lstlisting}
 
 \subsection*{Дневник отладки}
 
-Во время реализации я столкнулся с небольшими проблемами:
 \begin{enumerate}
-    \item Проблема с алгоритмом. Изначально для подзадач я брал следующий срез числа: $n[len(n) - k; len(n)]$ или же просто брал правые $k$ чисел. Очевидно, что это неправильно
-    \item Проблема со временем. Также перейдя к нисходящей концепции я решил задачу рекурсивно. Хотя задача и успешно была проверена на чекере, рекурсия тратит значительно больше времени, нежели итерация.
+    \item Было решено объединять все строки в матрицу и приводить ее к ступенчатому виду постепенно, вместо формирования матрицы для каждого набора строк и проверки его ранга.
+    \item Изменены типы данных некоторых переменных
+    \item Выполнена отладка некоторых функций, обнаружены ошибки в индексах
+    матрицы
 \end{enumerate}
 
 \subsection*{Тест производительности}
 
-Как видно из результатов теста, алогитм с использованием ДП гораздо быстрее, засчет асимптотики О(len(n)) вместо наивного лексикографического сравнения всех чисел за О(n*len(n))
+Ниже приведен тест времени работы алгоритма. По оси $X$ — количество 
+добавок при фиксированном количестве веществ, по оси $Y$ — время выполнения алгоритма в мс (меньше — лучше).
+На втором графике изменяется количество веществ при фиксированном количестве добавок.
 
-\begin{lstlisting}
-ivan@asus-vivobook ~/c/d/b/lab7 (master)> ./lab7_benchmark  < test1 \
-&& ./lab7_naive_benchmark < test1 && cat test1
-Bench
-Time: 0.000095 sec
-Naive Bench
-Time: 2.219022 sec
-1248129480 342
-1248129480 345
-1248129480 341
-\end{lstlisting}
-
-
-
-Ниже приведена программы, использовавштеся для засечения времени работы функций:
-\begin{lstlisting}[language=C++]
-#include <iostream>
-#include <string>
+\begin{tikzpicture}
+    \begin{axis} [
+        ymin = 0,
+        ylabel=$ms$,
+        xlabel=$M$,
+    ]
+    \addplot coordinates {
+        (100,1) (500,6) (1000,13) (5000, 62) (10000, 121) 
+    };
+    \end{axis}
+\end{tikzpicture}
 
 
-int main() {
-    long long n;
-    int m;
-    double start_time =  clock();
-    while (std::cin >> n >> m){
-        long long count = 0;
-        for (long long multiple = m; multiple < n; multiple += m) {
-            if (std::to_string(multiple) < std::to_string(n)) {
-                count++;
-            }
-        }
-    }
-    double end_time = clock();
-    double search_time = end_time - start_time;
-    printf("Naive Bench\nTime: %f sec\n", (double)search_time/CLOCKS_PER_SEC);
-    return 0;
-}
-\end{lstlisting}
+\begin{tikzpicture}
+    \begin{axis} [
+        ymin = 0,
+        ylabel=$ms$,
+        xlabel=$N$,
+    ]
+    \addplot coordinates {
+        (50,12) (100,45) (200,176) (300, 366) 
+    };
+    \end{axis}
+\end{tikzpicture}
 
-\begin{lstlisting}[language=C++]
-#include <iostream>
-#include <string>
-#include <math.h>
-#include <time.h>
+Сложность алгоритма $O(n^2m)$ показана графически
 
+Ниже приведена программы, использовавштеся для генерации данных для теста:
 
-int LengthOfNum(long long x){
-    int len=1;
-    while(x>9){ len++; x/=10; }
-    return len;
-}
+\begin{lstlisting}[language=Python]
+import random
+import sys
 
-long long CountMultiplesInRange(long long l, long long r, int m) {
-    long long firstMultiple = (l % m == 0) ? l : l + (m - l % m);
-    long long lastMultiple = (r % m == 0) ? r : r - (r % m);
-    if (firstMultiple > lastMultiple) {
-        return 0;
-    }
-    return (lastMultiple - firstMultiple) / m + 1;
-}
+file = open('test.txt', 'w')
 
-long long Solve(long long n, int m) {
-    int length = LengthOfNum(n);
-    long long result = 0;
-    long long a = pow(10, length-1);
-    long long b = n; 
-    for (int i = 0; i < length; ++i) {
-        result += CountMultiplesInRange(a, b, m);
-        a /= 10;
-        b /= 10;
-    }
-    if (n % m == 0) {
-        return result-1;
-    }
-    return result;
-}
+m = int(sys.argv[1])
+n = int(sys.argv[2])
+MAX_NUM = 50
 
+file.write(str(m) + ' ' + str(n) + '\n')
 
-int main() {
-    long long n;
-    int m;
-    double start_time =  clock();
-    while (std::cin >> n >> m){
-        long long x = Solve(n, m);
-    }
-    double end_time = clock();
-    double search_time = end_time - start_time;
-    printf("Bench\nTime: %f sec\n", (double)search_time/CLOCKS_PER_SEC);
-    return 0;
-}
+for _ in range(m):
+    for _ in range(n):
+        file.write(str(random.randint(0, MAX_NUM)) + ' ')
+    file.write(str(random.randint(0, MAX_NUM)) + '\n')
+
+file.close()
 \end{lstlisting}
 
 
 \subsection*{Выводы}
 
-В ходе выполнения лабораторной работы я изучил классические задачи динамического программирования и их методы решения, реализовал алгоритм для своего варианта задания.
-	
-Также в очередной раз убедился в том, что рекурсия - хорошее средство для ленивого программиста, но занимает достаточно много времени. Поэтому если есть возможность пользоваться итерацией, не следует ей пренебрегать.
 
-Динамическое программирование позволяет разработать точные и относительно быстрые алгоритмы для решения сложных задач, в то время, как решение перебором слишком медленное, а жадный алгоритм не всегда даёт правильный результат.
 
 \end{document}

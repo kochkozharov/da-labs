@@ -36,23 +36,15 @@ void SubtractRows(std::vector<Addition> &v, int t) {
     }
 }
 
-int main() {
-    int n, m;
-    std::cin >> m >> n;
+std::vector<int> Solve(std::vector<Addition> &additions) {
+    size_t m = additions.size();
+    size_t n = additions[0].ratios.size();
     std::vector<int> res;
-    std::vector<Addition> additions(m, Addition(n));
-    for (int i = 0; i < m; ++i) {
-        for (int j = 0; j < n; ++j) {
-            std::cin >> additions[i].ratios[j];
-        }
-        std::cin >> additions[i].price;
-        additions[i].index = i;
-    }
+
     for (int i = 0; i < n; ++i) {
         int index = FindLowestPriceRow(additions, i);
         if (index == -1) {
-            std::cout << "-1" << std::endl;
-            return 0;
+            return {};
         }
 
         std::swap(additions[i], additions[index]);
@@ -61,6 +53,30 @@ int main() {
     }
 
     std::sort(res.begin(), res.end());
+    return res;
+}
+
+
+int main() {
+    int n, m;
+    std::cin >> m >> n;
+    std::vector<Addition> additions(m, Addition(n));
+
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < n; ++j) {
+            std::cin >> additions[i].ratios[j];
+        }
+        std::cin >> additions[i].price;
+        additions[i].index = i;
+    }
+
+    std::vector<int> res = Solve(additions);
+
+    if (res.empty()) {
+        std::cout << "-1\n";
+        return 0;
+    }
+
     for (auto r : res) {
         std::cout << r + 1 << ' ';
     }

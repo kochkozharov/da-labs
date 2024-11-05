@@ -57,7 +57,7 @@ $c_1\times a_1 + c_2 \times a_2 +·\ldots +c_n \times a_n,$
 ответа, необходимо сохранять номера добавок. Таким образом, алгоритм заключается в прохождении по всем добавкам,
 вызывая функции FindLowestPriceRow и выдвижении найденой строчки вперед и вычитанию этой строчки из последующих, для приведения матрицы к ступенчатому виду
 
-Итоговая сложность
+Итоговая сложность $O(M \times N + N^2 \times M) = O(N^2 \times M).$
 
 \subsection*{Описание программы}
 
@@ -102,23 +102,15 @@ void SubtractRows(std::vector<Addition> &v, int t) {
     }
 }
 
-int main() {
-    int n, m;
-    std::cin >> m >> n;
+std::vector<int> Solve(std::vector<Addition> &additions) {
+    size_t m = additions.size();
+    size_t n = additions[0].ratios.size();
     std::vector<int> res;
-    std::vector<Addition> additions(m, Addition(n));
-    for (int i = 0; i < m; ++i) {
-        for (int j = 0; j < n; ++j) {
-            std::cin >> additions[i].ratios[j];
-        }
-        std::cin >> additions[i].price;
-        additions[i].index = i;
-    }
+
     for (int i = 0; i < n; ++i) {
         int index = FindLowestPriceRow(additions, i);
         if (index == -1) {
-            std::cout << "-1" << std::endl;
-            return 0;
+            return {};
         }
 
         std::swap(additions[i], additions[index]);
@@ -127,6 +119,30 @@ int main() {
     }
 
     std::sort(res.begin(), res.end());
+    return res;
+}
+
+
+int main() {
+    int n, m;
+    std::cin >> m >> n;
+    std::vector<Addition> additions(m, Addition(n));
+
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < n; ++j) {
+            std::cin >> additions[i].ratios[j];
+        }
+        std::cin >> additions[i].price;
+        additions[i].index = i;
+    }
+
+    std::vector<int> res = Solve(additions);
+
+    if (res.empty()) {
+        std::cout << "-1\n";
+        return 0;
+    }
+
     for (auto r : res) {
         std::cout << r + 1 << ' ';
     }
@@ -175,7 +191,7 @@ int main() {
     \end{axis}
 \end{tikzpicture}
 
-Сложность алгоритма $O(n^2m)$ показана графически
+Сложность алгоритма $O(N^2 \times M)$ показана графически
 
 Ниже приведена программы, использовавштеся для генерации данных для теста:
 
@@ -202,6 +218,7 @@ file.close()
 
 \subsection*{Выводы}
 
-
+Жадные алгоритмы -- это алгоритмы, которые на каждом этапе выбирается локально оптимальное решение, рассчитывая на то, что и решение всей этой задачи окажется оптимальным. Многие задачи могут быть успешно решены с помощью жадных алгоритмов, причем быстрее, чем другими методами.\newline
+В этой задаче я вспомнил линейную алгебру, а точнее метода Гаусса, а так де разобрался с тем, что составление оптимального набора линейно независимых строк -- это задача, которая модет быть решена жадным алгоритмом.
 
 \end{document}

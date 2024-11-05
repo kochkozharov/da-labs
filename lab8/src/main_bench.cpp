@@ -5,7 +5,6 @@
 
 using duration_t = std::chrono::milliseconds;
 
-
 constexpr const int MAX_NUM = 50;
 
 struct Addition {
@@ -40,11 +39,31 @@ void SubtractRows(std::vector<Addition> &v, int t) {
     }
 }
 
+std::vector<int> Solve(std::vector<Addition> &additions) {
+    size_t m = additions.size();
+    size_t n = additions[0].ratios.size();
+    std::vector<int> res;
+
+    for (int i = 0; i < n; ++i) {
+        int index = FindLowestPriceRow(additions, i);
+        if (index == -1) {
+            return {};
+        }
+
+        std::swap(additions[i], additions[index]);
+        res.push_back(additions[i].index);
+        SubtractRows(additions, i);
+    }
+
+    std::sort(res.begin(), res.end());
+    return res;
+}
+
 int main() {
     int n, m;
     std::cin >> m >> n;
-    std::vector<int> res;
     std::vector<Addition> additions(m, Addition(n));
+
     for (int i = 0; i < m; ++i) {
         for (int j = 0; j < n; ++j) {
             std::cin >> additions[i].ratios[j];
@@ -52,22 +71,19 @@ int main() {
         std::cin >> additions[i].price;
         additions[i].index = i;
     }
-        auto start = std::chrono::system_clock::now();
-    for (int i = 0; i < n; ++i) {
-        int index = FindLowestPriceRow(additions, i);
-        if (index == -1) {
-            std::cout << "-1" << std::endl;
-            return 0;
-        }
 
-        std::swap(additions[i], additions[index]);
-        res.push_back(additions[i].index);
-        SubtractRows(additions, i);
-    }
+    auto start = std::chrono::system_clock::now();
+
+    std::vector<int> res = Solve(additions);
+
     auto end = std::chrono::system_clock::now();
     auto t1 = std::chrono::duration_cast<duration_t>(end - start).count();
 
-    std::sort(res.begin(), res.end());
+    if (res.empty()) {
+        std::cout << "-1\n";
+        return 0;
+    }
+
     for (auto r : res) {
         std::cout << r + 1 << ' ';
     }

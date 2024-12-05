@@ -1,7 +1,7 @@
 #include "suffix_tree.h"
 
 
-void Trie::Insert(size_t l, size_t r) {
+void SuffixTrie::Insert(size_t l, size_t r) {
     auto current = root;
     size_t oldL = l;
 
@@ -10,7 +10,7 @@ void Trie::Insert(size_t l, size_t r) {
             if (current->child.find(text[l]) != current->child.end()) {
                 current = current->child[text[l]];
             } else {
-                current->child[text[l]] = NewVertex(l, r, oldL);
+                current->child[text[l]] = NewNode(l, r, oldL);
                 break;
             }
         }
@@ -24,12 +24,12 @@ void Trie::Insert(size_t l, size_t r) {
                 current->r = i - 1;
                 size_t oldEnter = current->enter;
 
-                auto splitNode = NewVertex(i, finish, oldEnter);
+                auto splitNode = NewNode(i, finish, oldEnter);
                 splitNode->child = move(current->child);
                 current->child.clear();
                 current->child[text[i]] = splitNode;
 
-                current->child[text[l + i - start]] = NewVertex(l + i - start, r, oldL);
+                current->child[text[l + i - start]] = NewNode(l + i - start, r, oldL);
                 cut = true;
                 break;
             }
@@ -40,7 +40,7 @@ void Trie::Insert(size_t l, size_t r) {
             if (current->child.find(text[newL]) != current->child.end()) {
                 current = current->child[text[newL]];
             } else {
-                current->child[text[newL]] = NewVertex(newL, r, oldL);
+                current->child[text[newL]] = NewNode(newL, r, oldL);
                 break;
             }
             l = newL;
@@ -51,15 +51,15 @@ void Trie::Insert(size_t l, size_t r) {
 }
 
 
-std::shared_ptr<Trie::Vertex> Trie::NewVertex(size_t l, size_t r, size_t enter) {
-    auto vertex = std::make_shared<Vertex>();
+std::shared_ptr<SuffixTrie::Node> SuffixTrie::NewNode(size_t l, size_t r, size_t enter) {
+    auto vertex = std::make_shared<Node>();
     vertex->l = l;
     vertex->r = r;
     vertex->enter = enter;
     return vertex;
 }
 
-void Trie::DFS(std::vector<size_t> &res, std::shared_ptr<Trie::Vertex> current) {
+void SuffixTrie::DFS(std::vector<size_t> &res, std::shared_ptr<SuffixTrie::Node> current) {
     if (current->child.empty()) {
         res.push_back(current->enter);
     }
@@ -68,14 +68,14 @@ void Trie::DFS(std::vector<size_t> &res, std::shared_ptr<Trie::Vertex> current) 
     }
 }
 
-Trie::Trie(const std::string &inputText) {
+SuffixTrie::SuffixTrie(const std::string &inputText) {
     text = inputText + '$';
-    root = std::make_shared<Vertex>();
+    root = std::make_shared<Node>();
     for (size_t i = 0; i < text.length(); ++i)
         Insert(i, text.length() - 1);
 }
 
-std::vector<size_t> Trie::Search(const std::string &pattern) {
+std::vector<size_t> SuffixTrie::Search(const std::string &pattern) {
     std::vector<size_t> res;
     auto current = root;
     size_t l = 0;

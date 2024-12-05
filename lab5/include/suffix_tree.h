@@ -5,24 +5,24 @@
 #include <vector>
 #include <string>
 
-class Trie {
+class SuffixTrie {
 private:
-    struct Vertex {
+    struct Node {
         size_t l;
         size_t r;
         size_t enter;
-        std::map<char, std::shared_ptr<Vertex>> child;
+        std::map<char, std::shared_ptr<Node>> child;
     };
 
-    std::shared_ptr<Vertex> root;
+    std::shared_ptr<Node> root;
     std::string text;
 
     void Insert(size_t l, size_t r);
-    static std::shared_ptr<Vertex> NewVertex(size_t l, size_t r, size_t enter);
-    void DFS(std::vector<size_t>& res, std::shared_ptr<Vertex> current);
+    static std::shared_ptr<Node> NewNode(size_t l, size_t r, size_t enter);
+    void DFS(std::vector<size_t>& res, std::shared_ptr<Node> current);
 
 public:
-    explicit Trie(const std::string& inputText);
+    explicit SuffixTrie(const std::string& inputText);
     std::vector<size_t> Search(const std::string& pattern);
 };
 

@@ -7,12 +7,12 @@ using namespace std;
 int main() {
     string text;
     cin >> text;
-    Trie trie(text);
+    SuffixTrie SuffixTrie(text);
 
     string pattern;
     size_t counter = 1;
     while (cin >> pattern) {
-        vector<size_t> res = trie.Search(pattern);
+        vector<size_t> res = SuffixTrie.Search(pattern);
         if (!res.empty()) {
             printf("%zu: ", counter);
             sort(res.begin(), res.end());

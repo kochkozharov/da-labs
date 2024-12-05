@@ -47,14 +47,14 @@ int main() {
     long t1=0;
     long t2=0;
     auto start = std::chrono::system_clock::now();
-    Trie trie(text); 
+    SuffixTrie SuffixTrie(text); 
     auto end = std::chrono::system_clock::now();
     t1 += std::chrono::duration_cast<duration_t>(end - start).count();
 
     for (int i = 0; i < 10000; ++i) {
         string pattern = generateRandomString(10);
         auto start = std::chrono::system_clock::now();
-        vector<size_t> res1 = trie.Search(pattern);
+        vector<size_t> res1 = SuffixTrie.Search(pattern);
         auto end = std::chrono::system_clock::now();
         t1 += std::chrono::duration_cast<duration_t>(end - start).count();
 

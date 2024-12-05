@@ -6,3 +6,6 @@ add_executable(lab5 main.cpp)
 target_link_libraries(lab5 suffix_tree)
 
 add_executable(lab5_contest single_file.cpp)
+
+add_executable(lab5_benchmark benchmark.cpp)
+target_link_libraries(lab5_benchmark suffix_tree)

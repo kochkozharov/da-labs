@@ -1,12 +1,9 @@
-#include <memory>
-#include <map>
-#include <vector>
 #include "suffix_tree.h"
 
 
-void Trie::Insert(int l, int r) {
+void Trie::Insert(size_t l, size_t r) {
     auto current = root;
-    int oldL = l;
+    size_t oldL = l;
 
     while (l <= r) {
         if (current == root) {
@@ -18,14 +15,14 @@ void Trie::Insert(int l, int r) {
             }
         }
 
-        int start = current->l;
-        int finish = current->r;
+        size_t start = current->l;
+        size_t finish = current->r;
         bool cut = false;
 
-        for (int i = start; (i <= finish) && (l + i - start <= r); ++i) {
+        for (size_t i = start; (i <= finish) && (l + i - start <= r); ++i) {
             if (text[i] != text[l + i - start]) {
                 current->r = i - 1;
-                int oldEnter = current->enter;
+                size_t oldEnter = current->enter;
                 current->enter = -1;
 
                 auto splitNode = NewVertex(i, finish, oldEnter);
@@ -40,7 +37,7 @@ void Trie::Insert(int l, int r) {
         }
 
         if (!cut) {
-            int newL = l + finish - start + 1;
+            size_t newL = l + finish - start + 1;
             if (current->child.find(text[newL]) != current->child.end()) {
                 current = current->child[text[newL]];
             } else {
@@ -54,14 +51,8 @@ void Trie::Insert(int l, int r) {
     }
 }
 
-std::shared_ptr<Trie::Vertex> Trie::NewVertex(int l, int r) {
-    auto vertex = std::make_shared<Vertex>();
-    vertex->l = l;
-    vertex->r = r;
-    return vertex;
-}
 
-std::shared_ptr<Trie::Vertex> Trie::NewVertex(int l, int r, int enter) {
+std::shared_ptr<Trie::Vertex> Trie::NewVertex(size_t l, size_t r, size_t enter) {
     auto vertex = std::make_shared<Vertex>();
     vertex->l = l;
     vertex->r = r;
@@ -69,7 +60,7 @@ std::shared_ptr<Trie::Vertex> Trie::NewVertex(int l, int r, int enter) {
     return vertex;
 }
 
-void Trie::DFS(std::vector<int> &res, std::shared_ptr<Trie::Vertex> current) {
+void Trie::DFS(std::vector<size_t> &res, std::shared_ptr<Trie::Vertex> current) {
     if (current->child.empty()) {
         res.push_back(current->enter);
     }
@@ -85,11 +76,11 @@ Trie::Trie(const std::string &inputText) {
         Insert(i, text.length() - 1);
 }
 
-std::vector<int> Trie::Search(const std::string &pattern) {
-    std::vector<int> res;
+std::vector<size_t> Trie::Search(const std::string &pattern) {
+    std::vector<size_t> res;
     auto current = root;
-    int l = 0;
-    int r = pattern.length() - 1;
+    size_t l = 0;
+    size_t r = pattern.length() - 1;
     bool flag = false;
 
     while (l <= r) {
@@ -101,9 +92,9 @@ std::vector<int> Trie::Search(const std::string &pattern) {
             }
         }
 
-        int start = current->l;
-        int finish = current->r;
-        for (int i = 0; (start + i <= finish) && (i + l <= r); ++i) {
+        size_t start = current->l;
+        size_t finish = current->r;
+        for (size_t i = 0; (start + i <= finish) && (i + l <= r); ++i) {
             if (pattern[i + l] != text[start + i]) {
                 flag = true;
                 break;

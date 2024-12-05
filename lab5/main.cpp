@@ -1,11 +1,8 @@
 #include <algorithm>
 #include <iostream>
-#include <string>
-#include <vector>
 #include "suffix_tree.h"
 
 using namespace std;
-
 
 int main() {
     string text;
@@ -13,17 +10,17 @@ int main() {
     Trie trie(text);
 
     string pattern;
-    int counter = 1;
+    size_t counter = 1;
     while (cin >> pattern) {
-        vector<int> res = trie.Search(pattern);
+        vector<size_t> res = trie.Search(pattern);
         if (!res.empty()) {
-            printf("%d: ", counter);
+            printf("%zu: ", counter);
             sort(res.begin(), res.end());
             for (size_t i = 0; i < res.size(); ++i) {
                 if (i != 0) {
                     printf(", ");
                 }
-                printf("%d", res[i] + 1);
+                printf("%zu", res[i] + 1);
             }
             printf("\n");
         }

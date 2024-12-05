@@ -51,7 +51,6 @@ void Trie::Insert(size_t l, size_t r) {
             if (text[i] != text[l + i - start]) {
                 current->r = i - 1;
                 size_t oldEnter = current->enter;
-                current->enter = -1;
 
                 auto splitNode = NewVertex(i, finish, oldEnter);
                 splitNode->child = move(current->child);

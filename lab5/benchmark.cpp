@@ -50,29 +50,33 @@ int main() {
     SuffixTrie SuffixTrie(text); 
     auto end = std::chrono::system_clock::now();
     t1 += std::chrono::duration_cast<duration_t>(end - start).count();
+    for (int j = 1; j < 11; ++j) {
+        int cnt = j*10000;
+        cout << "Count: " << cnt << '\n';
+        for (int i = 0; i < cnt; ++i) {
+            string pattern = generateRandomString(10);
+            auto start = std::chrono::system_clock::now();
+            vector<size_t> res1 = SuffixTrie.Search(pattern);
+            auto end = std::chrono::system_clock::now();
+            t1 += std::chrono::duration_cast<duration_t>(end - start).count();
 
-    for (int i = 0; i < 10000; ++i) {
-        string pattern = generateRandomString(10);
-        auto start = std::chrono::system_clock::now();
-        vector<size_t> res1 = SuffixTrie.Search(pattern);
-        auto end = std::chrono::system_clock::now();
-        t1 += std::chrono::duration_cast<duration_t>(end - start).count();
+
+            vector<size_t> res2;
+            start = std::chrono::system_clock::now();
+            size_t pos = text.find(pattern, 0);
+            while (pos != string::npos) {
+                res2.push_back(pos);
+                pos = text.find(pattern, pos + 1);
+            }
+            end = std::chrono::system_clock::now();
+            t2 += std::chrono::duration_cast<duration_t>(end - start).count();
+            sort(res1.begin(), res1.end());
+            sort(res2.begin(), res2.end());
 
 
-        vector<size_t> res2;
-        start = std::chrono::system_clock::now();
-        size_t pos = text.find(pattern, 0);
-        while (pos != string::npos) {
-            res2.push_back(pos);
-            pos = text.find(pattern, pos + 1);
+            assert(res1 == res2);
         }
-        end = std::chrono::system_clock::now();
-        t2 += std::chrono::duration_cast<duration_t>(end - start).count();
-        sort(res1.begin(), res1.end());
-        sort(res2.begin(), res2.end());
+        cout << "suf_tree: " << t1 << '\n' << "naive: "  << t2 << '\n';
 
-
-        assert(res1 == res2);
     }
-    cout << "suf_tree: " << t1 << '\n' << "naive: "  << t2 << '\n';
 }

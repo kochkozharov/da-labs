@@ -8,6 +8,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[russian]{babel}
 \usepackage{amsmath}
+\usepackage{pgfplots}
 
 \begin{document}
 
@@ -19,180 +20,380 @@
 
 Краткое описание задачи:
 \begin{enumerate}
-    \item При помощи метода динамического программирования разработать алгоритм решения задачи, определяемой
+    \item При помощи структуры данных суффиксное дерево разработать алгоритм решения задачи, определяемой
     своим вариантом
-    \item \textit{Вариант:} Количество чисел
-    \item \textit{Задача:} Задано целое число $n$. Необходимо найти количество натуральных (без нуля) чисел, которые меньше $n$ по значению \textbf{и} меньше $n$ лексикографически (если сравнивать два числа как строки), а также делятся на $m$ без остатка.
+    \item \textit{Вариант:} Упрощенный вариант
+    \item \textit{Задача:} Реализовать поиск подстрок в тексте с использование суффиксного дерева. Суффиксное дерево можно построить за $O(n^2)$ наивным методом. 
 \end{enumerate}
 
 \subsection*{Метод решения}
 
-Будем на каждой итерации цикла применять функцию CountMultiplesInRange(long long l, long long r, int m) для подсчета чисел, делящихся на m без остатка, лежащих в диапазоне $l$ и $r$ . Динамическое программирование основано на переходе из состояния $dp[n][m]$, в состояние $dp[n/10][m]$ и так далее, пока n не станет меньше 10. 
-Это решение можно представить рекурсивной функцией: dp[n][m] = CountMultiplesInRange(pow(10, len(n)-1), n, m) + dp[n/10][m]. Таким образом мы подсчитываем все CountMultiplesInRange(pow(10, len(n)-1), n, m) для всех префиксов числа n, очевидно что эти префиксы меньше и лексикографически меньше n, и суммируем все эти результаты. Это и будет ответом.
-Сложность алгоритма - O(len(n))
+Наивный способ представляет собой compact trie, который построен по всем суффиксам
+текущей строки, сначала помещается несобственный суффикс S[1..m]\$, затем
+последовательно вводятся суффиксы S[i..m]\$ для i от 2 до m.
+При этом мы должны сохранить свойства суффиксного дерева:
+\begin{itemize}
+    \item Trie должен оставаться compact trie
+    \item В наивном алгоритме при вставке очередного суффикса сравниваем первую букву
+\end{itemize}
+Количество листьев в trie совпадает с количеством суффиксов в строке
+суффикса и детей корня, если совпадений нет, то есть из корня мы не можем перейти
+ни по одному из ребер, то вставляем весь суффикс от корня. Иначе, идем по совпавшему
+ребру до того момента, пока встретим несовпадение. Тогда нам будет необходимо сделать
+split текущего ребра, то есть уменьшить его правую границу, создать 2 новых ребра,
+одно из которых будет отвечать за продолжение исходной дуги, ему необходимо будет
+перекопировать детей, а второе будет являться оставшейся частью суффикса. Если мы
+дошли до конца ребра и не встретили несовпадений, то ищем среди детей этого ребра
+букву, по которой можем перейти дальше, если общая буква существует, то повторяем
+алгоритм заново, если нет, то вставляем оставшийся суффикс от текущего ребра.
+Поиск паттерна работает аналогично вставке, только когда мы встречаем несовпадение,
+то просто останавливаем цикл, если же мы не встретили несовпадений и при этом
+паттерн закончился, то мы нашли вхождение. Чтобы узнать на каких позициях есть
+вхождение, необходимо от текущей вершины обойти всех детей поиском в глубину. Так
+мы получим массив, в котором будут хранится индексы вхождений паттерна в текст.
 
 \subsection*{Описание программы}
 
 Разделение по файлам, описание основных типов данных и функций. \\
 \begin{itemize}
     \item
-        Реализация алгоритма
+        suffix\_tree.h,
         \begin{lstlisting}[language=C++]
+#pragma once 
+
+#include <memory>
+#include <map>
+#include <vector>
+#include <string>
+
+class SuffixTrie {
+private:
+    struct Node {
+        size_t l;
+        size_t r;
+        size_t enter;
+        std::map<char, std::shared_ptr<Node>> child;
+    };
+
+    std::shared_ptr<Node> root;
+    std::string text;
+
+    void Insert(size_t l, size_t r);
+    static std::shared_ptr<Node> NewNode
+            (size_t l, size_t r, size_t enter);
+    void DFS(std::vector<size_t>& res,
+        std::shared_ptr<Node> current);
+
+public:
+    explicit SuffixTrie(const std::string& inputText);
+    std::vector<size_t> Search(const std::string& pattern);
+};
+        \end{lstlisting}
+        \item
+        suffix\_tree.cpp
+        \begin{lstlisting}[language=C++]
+#include "suffix_tree.h"
+
+void SuffixTrie::Insert(size_t l, size_t r) {
+    auto current = root;
+    size_t oldL = l;
+
+    while (l <= r) {
+        if (current == root) {
+            if (current->child.find(text[l]) 
+                != current->child.end()) {
+                current = current->child[text[l]];
+            } else {
+                current->child[text[l]] = NewNode(l, r, oldL);
+                break;
+            }
+        }
+
+        size_t start = current->l;
+        size_t finish = current->r;
+        bool cut = false;
+
+        for (size_t i = start; (i <= finish) &&
+             (l + i - start <= r); ++i) {
+            if (text[i] != text[l + i - start]) {
+                current->r = i - 1;
+                size_t oldEnter = current->enter;
+
+                auto splitNode = NewNode(i, finish, oldEnter);
+                splitNode->child = move(current->child);
+                current->child.clear();
+                current->child[text[i]] = splitNode;
+
+                current->child[text[l + i - start]] 
+                = NewNode(l + i - start, r, oldL);
+                cut = true;
+                break;
+            }
+        }
+
+        if (!cut) {
+            size_t newL = l + finish - start + 1;
+            if (current->child.find(text[newL]) !=
+                 current->child.end()) {
+                current = current->child[text[newL]];
+            } else {
+                current->child[text[newL]] =
+                     NewNode(newL, r, oldL);
+                break;
+            }
+            l = newL;
+        } else {
+            break;
+        }
+    }
+}
+
+
+std::shared_ptr<SuffixTrie::Node> SuffixTrie::NewNode
+                    (size_t l, size_t r, size_t enter) {
+    auto vertex = std::make_shared<Node>();
+    vertex->l = l;
+    vertex->r = r;
+    vertex->enter = enter;
+    return vertex;
+}
+
+void SuffixTrie::DFS(std::vector<size_t> &res, 
+            std::shared_ptr<SuffixTrie::Node> current) {
+    if (current->child.empty()) {
+        res.push_back(current->enter);
+    }
+    for (const auto &[first, child] : current->child) {
+        DFS(res, child);
+    }
+}
+
+SuffixTrie::SuffixTrie(const std::string &inputText) {
+    text = inputText + '$';
+    root = std::make_shared<Node>();
+    for (size_t i = 0; i < text.length(); ++i)
+        Insert(i, text.length() - 1);
+}
+
+std::vector<size_t> SuffixTrie::Search
+            (const std::string &pattern) {
+    std::vector<size_t> res;
+    auto current = root;
+    size_t l = 0;
+    size_t r = pattern.length() - 1;
+    bool flag = false;
+
+    while (l <= r) {
+        if (current == root) {
+            if (current->child.find(pattern[l]) !=
+                             current->child.end()) {
+                current = current->child[pattern[l]];
+            } else {
+                break;
+            }
+        }
+
+        size_t start = current->l;
+        size_t finish = current->r;
+        for (size_t i = 0; (start + i <= finish) &&
+                                     (i + l <= r); ++i) {
+            if (pattern[i + l] != text[start + i]) {
+                flag = true;
+                break;
+            }
+        }
+
+        if (!flag) {
+            l = l + finish - start + 1;
+            if (l > r) {
+                break;
+            }
+            if (current->child.find(pattern[l]) !=
+                                 current->child.end()) {
+                current = current->child[pattern[l]];
+            } else {
+                break;
+            }
+        } else {
+            break;
+        }
+    }
+
+    if ((l > r) && (!flag) && (!pattern.empty())) {
+        DFS(res, current);
+    }
+    return res;
+}
+        \end{lstlisting}
+        \item
+        main.cpp
+        \begin{lstlisting}[language=C++]
+#include <algorithm>
 #include <iostream>
-#include <cmath>
+#include "suffix_tree.h"
 
-int LengthOfNum(long long x){
-    int len=1;
-    while(x>9){ len++; x/=10; }
-    return len;
-}
-
-long long CountMultiplesInRange(long long l, long long r, int m) {
-    long long firstMultiple = (l % m == 0) ? l : l + (m - l % m);
-    long long lastMultiple = (r % m == 0) ? r : r - (r % m);
-    if (firstMultiple > lastMultiple) {
-        return 0;
-    }
-    return (lastMultiple - firstMultiple) / m + 1;
-}
-
-long long Solve(long long n, int m) {
-    int length = LengthOfNum(n);
-    long long result = 0;
-    long long a = pow(10, length-1);
-    long long b = n; 
-    for (int i = 0; i < length; ++i) {
-        result += CountMultiplesInRange(a, b, m);
-        a /= 10;
-        b /= 10;
-    }
-    if (n % m == 0) {
-        return result-1;
-    }
-    return result;
-}
+using namespace std;
 
 int main() {
-    long long n;
-    int m;
-    std::cin >> n >> m;
-    std::cout << Solve(n, m) << std::endl;
+    string text;
+    cin >> text;
+    SuffixTrie SuffixTrie(text);
+
+    string pattern;
+    size_t counter = 1;
+    while (cin >> pattern) {
+        vector<size_t> res = SuffixTrie.Search(pattern);
+        if (!res.empty()) {
+            printf("%zu: ", counter);
+            sort(res.begin(), res.end());
+            for (size_t i = 0; i < res.size(); ++i) {
+                if (i != 0) {
+                    printf(", ");
+                }
+                printf("%zu", res[i] + 1);
+            }
+            printf("\n");
+        }
+        ++counter;
+    }
+
     return 0;
 }
         \end{lstlisting}
 \end{itemize}
 
+Функции-члены класса:
+Приватные:
+\begin{enumerate}
+    \item Insert - вставляет часть строки с индекса l по индекс r в trie
+    \item NewNode - статический метод для создания узла без детей
+    \item DFS - функция, которая обходит всех детей узла и сохраняет номера листьев переданный вектор
+\end{enumerate}
+Публичные
+\begin{enumerate}
+    \item SuffixTrie - конструктор, принимающий одну строку. Он добавляет сентинел к строке и всталяет все преффиксы строки в trie c помощью Insert
+    \item Search - возвращает вектор с индексами всех вхождений строки в текст
+\end{enumerate}
+
 \subsection*{Дневник отладки}
 
-Во время реализации я столкнулся с небольшими проблемами:
+Во время реализации я столкнулся с проблемами:
 \begin{enumerate}
-    \item Проблема с алгоритмом. Изначально для подзадач я брал следующий срез числа: $n[len(n) - k; len(n)]$ или же просто брал правые $k$ чисел. Очевидно, что это неправильно
-    \item Проблема со временем. Также перейдя к нисходящей концепции я решил задачу рекурсивно. Хотя задача и успешно была проверена на чекере, рекурсия тратит значительно больше времени, нежели итерация.
+    \item Проблема с алгоритмом. Изначально на чекере выдывало Memory Limit, для избежания проблемы необходимо было использовать сжатое суффиксное дерево. Поэтому пришлось полностью переписать алгоритм.
 \end{enumerate}
 
 \subsection*{Тест производительности}
 
-Как видно из результатов теста, алогитм с использованием ДП гораздо быстрее, засчет асимптотики О(len(n)) вместо наивного лексикографического сравнения всех чисел за О(n*len(n))
-
-\begin{lstlisting}
-ivan@asus-vivobook ~/c/d/b/lab7 (master)> ./lab7_benchmark  < test1 \
-&& ./lab7_naive_benchmark < test1 && cat test1
-Bench
-Time: 0.000095 sec
-Naive Bench
-Time: 2.219022 sec
-1248129480 342
-1248129480 345
-1248129480 341
-\end{lstlisting}
-
-
-
-Ниже приведена программы, использовавштеся для засечения времени работы функций:
 \begin{lstlisting}[language=C++]
+#include "suffix_tree.h"
+#include <cstddef>
+#include <cstdio>
 #include <iostream>
 #include <string>
+#include <vector>
+#include <cassert>
+#include <chrono>
+#include <algorithm>
+#include <random>
 
+using duration_t = std::chrono::microseconds;
 
-int main() {
-    long long n;
-    int m;
-    double start_time =  clock();
-    while (std::cin >> n >> m){
-        long long count = 0;
-        for (long long multiple = m; multiple < n; multiple += m) {
-            if (std::to_string(multiple) < std::to_string(n)) {
-                count++;
-            }
-        }
-    }
-    double end_time = clock();
-    double search_time = end_time - start_time;
-    printf("Naive Bench\nTime: %f sec\n", (double)search_time/CLOCKS_PER_SEC);
-    return 0;
-}
-\end{lstlisting}
+using namespace std;
 
-\begin{lstlisting}[language=C++]
-#include <iostream>
-#include <string>
-#include <math.h>
-#include <time.h>
+string generateRandomString(int length)
+{
+    // Define the list of possible characters
+    const string CHARACTERS
+        = "abcdefghijklmnopqrstuvwxyz";
 
+    // Create a random number generator
+    random_device rd;
+    mt19937 generator(rd());
 
-int LengthOfNum(long long x){
-    int len=1;
-    while(x>9){ len++; x/=10; }
-    return len;
-}
+    // Create a distribution to uniformly select from all
+    // characters
+    uniform_int_distribution<> distribution(
+        0, CHARACTERS.size() - 1);
 
-long long CountMultiplesInRange(long long l, long long r, int m) {
-    long long firstMultiple = (l % m == 0) ? l : l + (m - l % m);
-    long long lastMultiple = (r % m == 0) ? r : r - (r % m);
-    if (firstMultiple > lastMultiple) {
-        return 0;
-    }
-    return (lastMultiple - firstMultiple) / m + 1;
-}
-
-long long Solve(long long n, int m) {
-    int length = LengthOfNum(n);
-    long long result = 0;
-    long long a = pow(10, length-1);
-    long long b = n; 
+    // Generate the random string
+    string random_string;
     for (int i = 0; i < length; ++i) {
-        result += CountMultiplesInRange(a, b, m);
-        a /= 10;
-        b /= 10;
+        random_string
+            += CHARACTERS[distribution(generator)];
     }
-    if (n % m == 0) {
-        return result-1;
-    }
-    return result;
+
+    return random_string;
 }
 
-
 int main() {
-    long long n;
-    int m;
-    double start_time =  clock();
-    while (std::cin >> n >> m){
-        long long x = Solve(n, m);
+
+    string text=generateRandomString(10000);
+    long t1=0;
+    long t2=0;
+    auto start = std::chrono::system_clock::now();
+    SuffixTrie SuffixTrie(text); 
+    auto end = std::chrono::system_clock::now();
+    t1 += std::chrono::duration_cast<duration_t>
+        (end - start).count();
+
+    for (int i = 0; i < 10000; ++i) {
+        string pattern = generateRandomString(10);
+        auto start = std::chrono::system_clock::now();
+        vector<size_t> res1 = SuffixTrie.Search(pattern);
+        auto end = std::chrono::system_clock::now();
+        t1 += std::chrono::duration_cast<duration_t>
+            (end - start).count();
+
+
+        vector<size_t> res2;
+        start = std::chrono::system_clock::now();
+        size_t pos = text.find(pattern, 0);
+        while (pos != string::npos) {
+            res2.push_back(pos);
+            pos = text.find(pattern, pos + 1);
+        }
+        end = std::chrono::system_clock::now();
+        t2 += std::chrono::duration_cast<duration_t>
+            (end - start).count();
+        sort(res1.begin(), res1.end());
+        sort(res2.begin(), res2.end());
+
+
+        assert(res1 == res2);
     }
-    double end_time = clock();
-    double search_time = end_time - start_time;
-    printf("Bench\nTime: %f sec\n", (double)search_time/CLOCKS_PER_SEC);
-    return 0;
+    cout << "suf_tree: " << t1 
+        << '\n' << "naive: "  << t2 << '\n';
 }
 \end{lstlisting}
 
+Длинна текста будет фиксированной и равной 10000. Попробуем искать все вхождения N строки из 10 символов в этом тексте
+используя последловательный std::find и используя suffix\_trie
+
+
+\begin{tikzpicture}
+    \begin{axis} [
+        ymin = 0,
+        ylabel=$ms$,
+        xlabel=$N$,
+    ]
+    \addplot coordinates {
+         (10000, 69046) (20000,207233) (30000,414403) (40000,690395) (50000,1035087)
+    };
+    \addplot coordinates {
+         (10000, 28171) (20000,42338) (30000,61732) (40000,85091) (50000,116014)
+    };
+    \end{axis}
+\end{tikzpicture}
+
+Таким образом видим, что суффиксное дерево отлично подходит для поиска большого количество паттернов в одном неизменном тексте.
+Поиск одного паттерна через std::find имеет сложность $O(n \times k + m)$ где k - количество вхождений паттерна,
+а поиск через суффиксное дерево $O(m+k)$. $O(m)$ на спуск и $O(k)$ на обход поддерева.
 
 \subsection*{Выводы}
 
-В ходе выполнения лабораторной работы я изучил классические задачи динамического программирования и их методы решения, реализовал алгоритм для своего варианта задания.
-	
-Также в очередной раз убедился в том, что рекурсия - хорошее средство для ленивого программиста, но занимает достаточно много времени. Поэтому если есть возможность пользоваться итерацией, не следует ей пренебрегать.
-
-Динамическое программирование позволяет разработать точные и относительно быстрые алгоритмы для решения сложных задач, в то время, как решение перебором слишком медленное, а жадный алгоритм не всегда даёт правильный результат.
+В этой лабораторной работе я познакомился с практическим применением суффиксного
+дерева. В отличие от других алгоритмов поиска подстроки в строки, суффиксное дерево
+позволяет обработать текст, а не паттерны. Я научился строить сжатое суффиксное дерево
+наивным методом и выполнять в нем поиск. Теперь я знаю как работает ctrl+f (поиск по странице) в браузерах.
 
 \end{document}

@@ -15,7 +15,6 @@ private:
     };
 
     std::vector<Node*> roots;
-    std::vector<int> versionX;
     int size;
 
     Node* build(int start, int end) {
@@ -56,19 +55,6 @@ private:
         return newNode;
     }
 
-    int binarySearch(int x) {
-        int low = 0;
-        int high = versionX.size() - 1;
-        while (low < high) {
-            int mid = (low + high + 1) / 2;
-            if (versionX[mid] <= x) {
-                low = mid;
-            } else {
-                high = mid - 1;
-            }
-        }
-        return low;
-    }
 
     void printTree(Node* node, int level = 0) {
         if (!node) {
@@ -83,19 +69,16 @@ private:
 public:
     PersistentSegmentTree(int size) : size(size) {
         roots.resize(size);
-        versionX.push_back(-1);
         roots[0] = build(0, size - 1);
     }
 
     int query(int x, int l, int r) {
-        int version = binarySearch(x);
-        return query(roots[version], 0, size - 1, l, r);
+        return query(roots[x], 0, size - 1, l, r);
     }
 
     void update(int x, int ind, int val) {
         cnt++;
         roots[cnt] = update(roots[cnt - 1], 0, size - 1, ind, val);
-        versionX.push_back(x);
     }
 };
 

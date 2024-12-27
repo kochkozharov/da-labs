@@ -8,6 +8,9 @@
 struct Segments {
     int x, h, type;
     Segments(int x, int h, int type) : x(x), h(h), type(type) {}
+    friend bool operator<(const Segments& a, const Segments& b) {
+        return a.x < b.x;
+    }
 };
 
 struct Points {
@@ -15,9 +18,6 @@ struct Points {
     Points(int x, int y, int id) : x(x), y(y), id(id) {}
 };
 
-bool compareSegments(const Segments& a, const Segments& b) {
-    return a.x < b.x;
-}
 
 int main() {
     int n, m;
@@ -46,7 +46,7 @@ int main() {
     int maxY = uniqH.size();
     PersistentSegmentTree tree(maxY);
 
-    std::sort(segment.begin(), segment.end(), compareSegments);
+    std::sort(segment.begin(), segment.end());
 
     for (auto& seg : segment) {
         tree.update(seg.x, compressY[seg.h], seg.type);
@@ -61,7 +61,17 @@ int main() {
     for (const auto& pt : point) {
         auto it = compressY.upper_bound(pt.y);
         if (it != compressY.end()) {
-            results[pt.id] = tree.query(pt.x, it->second, maxY - 1);
+
+            auto segIt = std::upper_bound(
+                segment.begin(), segment.end(), pt.x,
+                [](int x, const auto& seg) {
+                    return x < seg.x;
+                }
+            );
+
+            int low = std::distance(segment.begin(), segIt) - 1;
+
+            results[pt.id] = tree.query(low, it->second, maxY - 1);
         } else {
             results[pt.id] = 0;
         }

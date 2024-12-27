@@ -5,17 +5,17 @@
 #include <set>
 #include <pers_segtree.h>
 
-struct Segments {
-    int x, h, type;
-    Segments(int x, int h, int type) : x(x), h(h), type(type) {}
-    friend bool operator<(const Segments& a, const Segments& b) {
-        return a.x < b.x;
+struct TPoint {
+    int x, y;
+    TPoint(int x, int y) : x(x), y(y) {}
+    friend bool operator<(const TPoint &lhs, const TPoint &rhs) {
+        return lhs.x < rhs.x;
     }
 };
-
-struct Points {
-    int x, y, id;
-    Points(int x, int y, int id) : x(x), y(y), id(id) {}
+struct TSegmentPoint : TPoint {
+    bool isBegin;
+    TSegmentPoint(int x, int y, bool isBegin)
+        : TPoint(x, y), isBegin(isBegin) {}
 };
 
 
@@ -23,8 +23,8 @@ int main() {
     int n, m;
     std::cin >> n >> m;
 
-    std::vector<Segments> segment;
-    std::vector<Points> point;
+    std::vector<TSegmentPoint> segment;
+    std::vector<TPoint> point;
     std::vector<int> results(m);
 
     std::set<int> uniqH;
@@ -49,17 +49,18 @@ int main() {
     std::sort(segment.begin(), segment.end());
 
     for (auto& seg : segment) {
-        tree.update(seg.x, compressY[seg.h], seg.type);
+        tree.update(seg.x, compressY[seg.y], static_cast<int>(seg.isBegin));
     }
 
     for (int i = 0; i < m; ++i) {
         int x, y;
         std::cin >> x >> y;
-        point.emplace_back(x, y, i);
+        point.emplace_back(x, y);
     }
 
     for (const auto& pt : point) {
         auto it = compressY.upper_bound(pt.y);
+        int res;
         if (it != compressY.end()) {
 
             auto segIt = std::upper_bound(
@@ -71,14 +72,12 @@ int main() {
 
             int low = std::distance(segment.begin(), segIt) - 1;
 
-            results[pt.id] = tree.query(low, it->second, maxY - 1);
+            res = tree.query(low, it->second, maxY - 1);
         } else {
-            results[pt.id] = 0;
+            res =  0;
         }
-    }
-
-    for (const auto& res : results) {
         std::cout << res << "\n";
+        
     }
 
     return 0;

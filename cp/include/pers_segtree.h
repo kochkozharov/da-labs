@@ -1,8 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <algorithm>
-#include <map>
-#include <set>
 
 class PersistentSegmentTree {
 private:

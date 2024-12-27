@@ -171,6 +171,7 @@ l, r, h, где l и r задают горизонтальные границы,
     \item std::shared\_ptr<Node> Build(int start, int end) - создание нового персистеного узла
     \item PersistentSegmentTree(int size) - построение дерева для заданного количества элементов
     \item void Set(int version, int index, int heightIndex, int value) - обновление дерева, добавляя или удаляя отрезки
+    \item int Sum(int version, int left, int right) constint Sum(int version, int left, int right) const - запрос на сумму на отрезке
     \item int Versions() const - получить количество версий дерева
 \end{itemize}
 

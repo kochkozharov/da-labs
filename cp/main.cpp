@@ -69,16 +69,19 @@ private:
 
 public:
     PersistentSegmentTree(int size) : size(size) {
-        roots.reserve(size);
         roots.push_back(Build(0, size - 1));
     }
 
-    void Set(int x, int index, int value) {
-        roots.push_back(Set(roots.back(), 0, size - 1, index, value));
+    void Set(int version, int index, int heightIndex, int value) {
+        roots.push_back(Set(roots[version], 0, size - 1, heightIndex, value));
     }
 
-    int Sum(int x, int left, int right) const {
-        return Sum(roots[x], 0, size - 1, left, right);
+    int Sum(int version, int left, int right) const {
+        return Sum(roots[version], 0, size - 1, left, right);
+    }
+
+    int Versions() const {
+        return roots.size();
     }
 };
 
@@ -90,9 +93,7 @@ int main() {
     std::vector<Point> points;
     std::vector<int> results(pointCount);
     std::set<int> uniqueHeights;
-    std::vector<int> versionMarkers;
-    versionMarkers.push_back(-1);
-
+    std::map<int, int> versionMap;
 
     for (int i = 0; i < segmentCount; ++i) {
         int left, right, height;
@@ -112,8 +113,8 @@ int main() {
     std::sort(segments.begin(), segments.end(), [](const Segment& a, const Segment& b) { return a.x < b.x; });
 
     for (const auto& segment : segments) {
-        tree.Set(segment.x, heightCompression[segment.height], segment.type);
-        versionMarkers.push_back(segment.x);
+        tree.Set(tree.Versions() - 1, segment.x, heightCompression[segment.height], segment.type);
+        versionMap[segment.x] = tree.Versions() - 1;
     }
 
     for (int i = 0; i < pointCount; ++i) {
@@ -124,8 +125,8 @@ int main() {
 
     for (const auto& point : points) {
         auto itY = heightCompression.upper_bound(point.y);
-        auto itX = std::upper_bound(versionMarkers.begin(), versionMarkers.end(), point.x);
-        int versionIndex = (itX == versionMarkers.begin()) ? 0 : std::distance(versionMarkers.begin(), itX) - 1;
+        auto itX = versionMap.upper_bound(point.x);
+        int versionIndex = (itX == versionMap.begin()) ? 0 : std::prev(itX)->second;
         int res;
         if (itY != heightCompression.end()) {
             res = tree.Sum(versionIndex, itY->second, compressedIndex - 1);
@@ -133,7 +134,6 @@ int main() {
             res = 0;
         }
         std::cout << res << "\n";
-
     }
 
     return 0;

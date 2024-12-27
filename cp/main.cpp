@@ -3,81 +3,136 @@
 #include <algorithm>
 #include <map>
 #include <set>
-#include <pers_segtree.h>
+#include <memory>
 
-struct TPoint {
-    int x, y;
-    TPoint(int x, int y) : x(x), y(y) {}
-    friend bool operator<(const TPoint &lhs, const TPoint &rhs) {
-        return lhs.x < rhs.x;
+struct Segment {
+    int x, height, type;
+    Segment(int x, int height, int type) : x(x), height(height), type(type) {}
+};
+
+struct Point {
+    int x, y, id;
+    Point(int x, int y, int id) : x(x), y(y), id(id) {}
+};
+
+class PersistentSegmentTree {
+private:
+    struct Node {
+        int value;
+        std::shared_ptr<Node> left;
+        std::shared_ptr<Node> right;
+
+        Node(int value = 0) : value(value), left(nullptr), right(nullptr) {}
+    };
+
+    std::vector<std::shared_ptr<Node>> roots;
+    int size;
+
+    std::shared_ptr<Node> Build(int start, int end) {
+        auto node = std::make_shared<Node>();
+        if (start == end) {
+            return node;
+        }
+        int mid = (start + end) / 2;
+        node->left = Build(start, mid);
+        node->right = Build(mid + 1, end);
+        return node;
+    }
+
+    int Sum(const std::shared_ptr<Node>& node, int start, int end, int left, int right) const {
+        if (!node || right < start || end < left) {
+            return 0;
+        }
+        if (left <= start && end <= right) {
+            return node->value;
+        }
+        int mid = (start + end) / 2;
+        return Sum(node->left, start, mid, left, right) + Sum(node->right, mid + 1, end, left, right);
+    }
+
+    std::shared_ptr<Node> Set(const std::shared_ptr<Node>& node, int start, int end, int index, int value) {
+        auto newNode = std::make_shared<Node>(*node);
+        if (start == end) {
+            newNode->value += value;
+        } else {
+            int mid = (start + end) / 2;
+            if (index <= mid) {
+                newNode->left = Set(node->left, start, mid, index, value);
+            } else {
+                newNode->right = Set(node->right, mid + 1, end, index, value);
+            }
+            newNode->value = (newNode->left ? newNode->left->value : 0) + 
+                             (newNode->right ? newNode->right->value : 0);
+        }
+        return newNode;
+    }
+
+public:
+    PersistentSegmentTree(int size) : size(size) {
+        roots.push_back(Build(0, size - 1));
+    }
+
+    void Set(int x, int index, int value) {
+        roots.push_back(Set(roots.back(), 0, size - 1, index, value));
+    }
+
+    int Sum(int x, int left, int right) const {
+        return Sum(roots[x], 0, size - 1, left, right);
     }
 };
-struct TSegmentPoint : TPoint {
-    bool isBegin;
-    TSegmentPoint(int x, int y, bool isBegin)
-        : TPoint(x, y), isBegin(isBegin) {}
-};
-
 
 int main() {
-    int n, m;
-    std::cin >> n >> m;
+    int segmentCount, pointCount;
+    std::cin >> segmentCount >> pointCount;
 
-    std::vector<TSegmentPoint> segment;
-    std::vector<TPoint> point;
-    std::vector<int> results(m);
+    std::vector<Segment> segments;
+    std::vector<Point> points;
+    std::vector<int> results(pointCount);
+    std::set<int> uniqueHeights;
+    std::vector<int> versionMarkers;
+    versionMarkers.push_back(-1);
 
-    std::set<int> uniqH;
 
-    for (int i = 0; i < n; ++i) {
-        int l, r, h;
-        std::cin >> l >> r >> h;
-        segment.emplace_back(l, h, 1);
-        segment.emplace_back(r + 1, h, -1);
-        uniqH.insert(h);
+    for (int i = 0; i < segmentCount; ++i) {
+        int left, right, height;
+        std::cin >> left >> right >> height;
+        segments.emplace_back(left, height, 1);
+        segments.emplace_back(right + 1, height, -1);
+        uniqueHeights.insert(height);
     }
 
-    std::map<int, int> compressY;
-    int coord = 0;
-    for (int y : uniqH) {
-        compressY[y] = coord++;
+    std::map<int, int> heightCompression;
+    int compressedIndex = 0;
+    for (int height : uniqueHeights) {
+        heightCompression[height] = compressedIndex++;
     }
 
-    int maxY = uniqH.size();
-    PersistentSegmentTree tree(maxY);
+    PersistentSegmentTree tree(compressedIndex);
+    std::sort(segments.begin(), segments.end(), [](const Segment& a, const Segment& b) { return a.x < b.x; });
 
-    std::sort(segment.begin(), segment.end());
-
-    for (auto& seg : segment) {
-        tree.update(seg.x, compressY[seg.y], static_cast<int>(seg.isBegin));
+    for (const auto& segment : segments) {
+        tree.Set(segment.x, heightCompression[segment.height], segment.type);
+        versionMarkers.push_back(segment.x);
     }
 
-    for (int i = 0; i < m; ++i) {
+    for (int i = 0; i < pointCount; ++i) {
         int x, y;
         std::cin >> x >> y;
-        point.emplace_back(x, y);
+        points.emplace_back(x, y, i);
     }
 
-    for (const auto& pt : point) {
-        auto it = compressY.upper_bound(pt.y);
+    for (const auto& point : points) {
+        auto it = heightCompression.upper_bound(point.y);
+        auto itX = std::upper_bound(versionMarkers.begin(), versionMarkers.end(), point.x);
+        int versionIndex = (itX == versionMarkers.begin()) ? 0 : std::distance(versionMarkers.begin(), itX) - 1;
         int res;
-        if (it != compressY.end()) {
-
-            auto segIt = std::upper_bound(
-                segment.begin(), segment.end(), pt.x,
-                [](int x, const auto& seg) {
-                    return x < seg.x;
-                }
-            );
-
-            int low = std::distance(segment.begin(), segIt) - 1;
-
-            res = tree.query(low, it->second, maxY - 1);
+        if (it != heightCompression.end()) {
+            res = tree.Sum(versionIndex, it->second, compressedIndex - 1);
         } else {
-            res =  0;
+            res = 0;
         }
         std::cout << res << "\n";
-        
+
     }
 
     return 0;

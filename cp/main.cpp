@@ -11,8 +11,8 @@ struct Segment {
 };
 
 struct Point {
-    int x, y, id;
-    Point(int x, int y, int id) : x(x), y(y), id(id) {}
+    int x, y;
+    Point(int x, int y) : x(x), y(y) {}
 };
 
 class PersistentSegmentTree {
@@ -69,6 +69,7 @@ private:
 
 public:
     PersistentSegmentTree(int size) : size(size) {
+        roots.reserve(size);
         roots.push_back(Build(0, size - 1));
     }
 
@@ -118,16 +119,16 @@ int main() {
     for (int i = 0; i < pointCount; ++i) {
         int x, y;
         std::cin >> x >> y;
-        points.emplace_back(x, y, i);
+        points.emplace_back(x, y);
     }
 
     for (const auto& point : points) {
-        auto it = heightCompression.upper_bound(point.y);
+        auto itY = heightCompression.upper_bound(point.y);
         auto itX = std::upper_bound(versionMarkers.begin(), versionMarkers.end(), point.x);
         int versionIndex = (itX == versionMarkers.begin()) ? 0 : std::distance(versionMarkers.begin(), itX) - 1;
         int res;
-        if (it != heightCompression.end()) {
-            res = tree.Sum(versionIndex, it->second, compressedIndex - 1);
+        if (itY != heightCompression.end()) {
+            res = tree.Sum(versionIndex, itY->second, compressedIndex - 1);
         } else {
             res = 0;
         }

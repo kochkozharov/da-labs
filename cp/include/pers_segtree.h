@@ -6,6 +6,7 @@
 
 class PersistentSegmentTree {
 private:
+    int cnt = 0;
     struct Node {
         int value;
         Node* left;
@@ -78,10 +79,12 @@ private:
         printTree(node->left, level + 1);
     }
 
+
 public:
     PersistentSegmentTree(int size) : size(size) {
-        roots.push_back(build(0, size - 1));
+        roots.resize(size);
         versionX.push_back(-1);
+        roots[0] = build(0, size - 1);
     }
 
     int query(int x, int l, int r) {
@@ -90,10 +93,9 @@ public:
     }
 
     void update(int x, int ind, int val) {
-        roots.push_back(update(roots.back(), 0, size - 1, ind, val));
+        cnt++;
+        roots[cnt] = update(roots[cnt - 1], 0, size - 1, ind, val);
         versionX.push_back(x);
-        // std::cout << "Версия дерева: " << roots.size() - 1 << "; х: " << x << "; y: " << ind << '\n';
-        // printTree(roots.back());
-        // std::cout << '\n';
     }
 };
+

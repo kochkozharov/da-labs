@@ -1,71 +1,73 @@
-#include "iostream"
-#include "map"
-#include "pers_segtree.h"
-#include "set"
-#include <algorithm>
-#include <iterator>
+#include <iostream>
 #include <vector>
+#include <algorithm>
+#include <map>
+#include <set>
+#include <pers_segtree.h>
 
-struct TPoint {
+struct Segments {
+    int x, h, type;
+    Segments(int x, int h, int type) : x(x), h(h), type(type) {}
+};
+
+struct Points {
     int x, y, id;
-    TPoint(int x, int y) : x(x), y(y) {}
-    friend bool operator<(const TPoint &lhs, const TPoint &rhs) {
-        return lhs.id < rhs.id;
-    }
+    Points(int x, int y, int id) : x(x), y(y), id(id) {}
 };
 
-struct TSegmentPoint : TPoint {
-    bool isBegin;
-    TSegmentPoint(int x, int y, bool isBegin)
-        : TPoint(x, y), isBegin(isBegin) {}
-};
+bool compareSegments(const Segments& a, const Segments& b) {
+    return a.x < b.x;
+}
 
 int main() {
-    size_t n, m;
+    int n, m;
     std::cin >> n >> m;
 
-    std::vector<TSegmentPoint> segment;
-    std::vector<TPoint> point;
-    std::set<long long> uniqH;
-    for (size_t i = 0; i < n; ++i) {
-        long long l, r, y;
-        std::cin >> l >> r >> y;
-        segment.emplace_back(l, y, 1);
-        segment.emplace_back(r, y, -1);
-        uniqH.insert(y);
+    std::vector<Segments> segment;
+    std::vector<Points> point;
+    std::vector<int> results(m);
+
+    std::set<int> uniqH;
+
+    for (int i = 0; i < n; ++i) {
+        int l, r, h;
+        std::cin >> l >> r >> h;
+        segment.emplace_back(l, h, 1);
+        segment.emplace_back(r + 1, h, -1);
+        uniqH.insert(h);
     }
 
-    std::map<const long long, long long> compressY;
+    std::map<int, int> compressY;
     int coord = 0;
-    for (long long y : uniqH) {
+    for (int y : uniqH) {
         compressY[y] = coord++;
     }
 
-    size_t maxY = uniqH.size();
-    TPersistentSegtree tree(maxY);
+    int maxY = uniqH.size();
+    PersistentSegmentTree tree(maxY);
 
-    std::sort(segment.begin(), segment.end());
+    std::sort(segment.begin(), segment.end(), compareSegments);
 
-    for (auto &seg : segment) {
-        tree.Add(compressY[seg.y], static_cast<long long>(seg.isBegin), seg.x);
+    for (auto& seg : segment) {
+        tree.update(seg.x, compressY[seg.h], seg.type);
     }
 
     for (int i = 0; i < m; ++i) {
-        long long x, y;
+        int x, y;
         std::cin >> x >> y;
-        point.emplace_back(x, y);
+        point.emplace_back(x, y, i);
     }
 
-    for (const auto &pt : point) {
+    for (const auto& pt : point) {
         auto it = compressY.upper_bound(pt.y);
-        size_t version = std::distance(std::lower_bound(segment.begin(), segment.end(), pt), segment.begin());
-        size_t res;
         if (it != compressY.end()) {
-            res = tree.Sum(it->second, maxY, version);
+            results[pt.id] = tree.query(pt.x, it->second, maxY - 1);
+        } else {
+            results[pt.id] = 0;
         }
-        else {
-            res = 0;
-        }
+    }
+
+    for (const auto& res : results) {
         std::cout << res << "\n";
     }
 

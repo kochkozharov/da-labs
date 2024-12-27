@@ -1,93 +1,99 @@
-#include <algorithm>
-#include <cstddef>
-#include <memory>
+#include <iostream>
 #include <vector>
+#include <algorithm>
+#include <map>
+#include <set>
 
-struct TPersistentSegtree {
-
-    struct TPersistentSegtreeNode {
-        size_t lIdx, rIdx;
-        long long sum = 0;
-        std::shared_ptr<TPersistentSegtreeNode> l = nullptr, r = nullptr;
-        TPersistentSegtreeNode(long long lIdx, long long rIdx)
-            : lIdx(lIdx), rIdx(rIdx) {
-            if (lIdx != rIdx) {
-                long long tmp = (lIdx + rIdx) / 2;
-                l = std::make_shared<TPersistentSegtreeNode>(lIdx, tmp);
-                r = std::make_shared<TPersistentSegtreeNode>(tmp, rIdx);
-            }
-        }
-
-        void Copy() {
-            if (l != nullptr) {
-                l = std::make_shared<TPersistentSegtreeNode>(*l);
-                r = std::make_shared<TPersistentSegtreeNode>(*r);
-            }
-        }
-
-        void Add(size_t idx, long long value) {
-            Copy();
-            sum += value;
-            if (l != nullptr) {
-                if (idx < l->rIdx) {
-                    l->Add(idx, value);
-                } else {
-                    r->Add(idx, value);
-                }
-            }
-        }
-
-        void Set(size_t idx, long long value) {
-            Copy();
-            if (lIdx == rIdx - 1) {
-                sum = value;
-                return;
-            }
-            if (idx < l->rIdx) {
-                l->Set(idx, value);
-            } else {
-                r->Set(idx, value);
-            }
-            sum = l->sum + r->sum;
-        }
-
-        [[nodiscard]] long long Sum(size_t lQueryIdx, size_t rQueryIdx) const {
-            if (lQueryIdx <= lIdx && rIdx <= rQueryIdx) {
-                return sum;
-            }
-            if (std::max(lIdx, lQueryIdx) >= std::min(rIdx, rQueryIdx)) {
-                return 0;
-            }
-            return l->Sum(lQueryIdx, rQueryIdx) + r->Sum(lQueryIdx, rQueryIdx);
-        }
+class PersistentSegmentTree {
+private:
+    struct Node {
+        int value;
+        Node* left;
+        Node* right;
+        Node(int v = 0) : value(v), left(nullptr), right(nullptr) {}
     };
 
-    TPersistentSegtree(size_t n) : roots(n){};
-    std::vector<std::shared_ptr<TPersistentSegtreeNode>> roots;
-    size_t curVersion = 0;
+    std::vector<Node*> roots;
+    std::vector<int> versionX;
+    int size;
 
-    TPersistentSegtree() {
-        roots[0] = std::make_shared<TPersistentSegtreeNode>(0, roots.size());
+    Node* build(int start, int end) {
+        Node* node = new Node();
+        if (start == end) {
+            return node;
+        }
+        int mid = (start + end) / 2;
+        node->left = build(start, mid);
+        node->right = build(mid + 1, end);
+        return node;
     }
 
-    void Add(size_t idx, long long value, size_t version) {
-        std::shared_ptr<TPersistentSegtreeNode> root =
-            std::make_shared<TPersistentSegtreeNode>(*roots[version]);
-        root->Add(idx, value);
-        curVersion++;
-        roots[curVersion] = root;
+    int query(Node* node, int start, int end, int l, int r) {
+        if (!node || r < start || end < l) {
+            return 0;
+        }
+        if (l <= start && end <= r) {
+            return node->value;
+        }
+        int mid = (start + end) / 2;
+        return query(node->left, start, mid, l, r) + query(node->right, mid + 1, end, l, r);
     }
 
-    void Set(size_t idx, long long value, size_t version) {
-        std::shared_ptr<TPersistentSegtreeNode> root =
-            std::make_shared<TPersistentSegtreeNode>(*roots[version]);
-        root->Set(idx, value);
-        curVersion++;
-        roots[curVersion] = root;
+    Node* update(Node* node, int start, int end, int ind, int val) {
+        Node* newNode = new Node(*node);
+        if (start == end) {
+            newNode->value += val;
+        } else {
+            int mid = (start + end) / 2;
+            if (ind <= mid) {
+                newNode->left = update(node->left, start, mid, ind, val);
+            } else {
+                newNode->right = update(node->right, mid + 1, end, ind, val);
+            }
+            newNode->value = newNode->left->value + newNode->right->value;
+        }
+        return newNode;
     }
 
-    [[nodiscard]] long long Sum(size_t lQueryIdx, size_t rQueryIdx,
-                                size_t version) const {
-        return roots[version]->Sum(lQueryIdx, rQueryIdx);
+    int binarySearch(int x) {
+        int low = 0;
+        int high = versionX.size() - 1;
+        while (low < high) {
+            int mid = (low + high + 1) / 2;
+            if (versionX[mid] <= x) {
+                low = mid;
+            } else {
+                high = mid - 1;
+            }
+        }
+        return low;
+    }
+
+    void printTree(Node* node, int level = 0) {
+        if (!node) {
+            return;
+        }
+        printTree(node->right, level + 1);
+        std::cout << std::string(level * 4, ' ') << node->value << std::endl;
+        printTree(node->left, level + 1);
+    }
+
+public:
+    PersistentSegmentTree(int size) : size(size) {
+        roots.push_back(build(0, size - 1));
+        versionX.push_back(-1);
+    }
+
+    int query(int x, int l, int r) {
+        int version = binarySearch(x);
+        return query(roots[version], 0, size - 1, l, r);
+    }
+
+    void update(int x, int ind, int val) {
+        roots.push_back(update(roots.back(), 0, size - 1, ind, val));
+        versionX.push_back(x);
+        // std::cout << "Версия дерева: " << roots.size() - 1 << "; х: " << x << "; y: " << ind << '\n';
+        // printTree(roots.back());
+        // std::cout << '\n';
     }
 };

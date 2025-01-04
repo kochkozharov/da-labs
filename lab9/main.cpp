@@ -13,9 +13,9 @@ int main() {
         graph.AddEdge(u, v, w);
     }
     auto allDistances = graph.Johnson();
-    if (allDistances->empty()) {
+    if (!allDistances) {
         std::cout << "Negative cycle\n";
-        return 1;
+        return 0;
     }
     for (size_t i = 1; i < n+1; ++i) {
         for (size_t j = 1; j < n+1; ++j) {

@@ -77,7 +77,7 @@ private:
 public:
 
     Graph(size_t verticesCount) : adjList(verticesCount + 1) {
-        for (size_t i = 1; i < adjList.size(); ++i) {
+        for (size_t i = 1; i < verticesCount+1; ++i) {
             adjList[0].emplace_back(i, 0);
         }
     }
@@ -88,7 +88,7 @@ public:
 
     std::optional<std::vector<std::vector<long long>>> Johnson() {
         auto potentials = BellmanFord(0);
-        if (potentials->empty()) {
+        if (!potentials) {
             return std::nullopt;
         }
         for (size_t u = 1; u < adjList.size(); ++u) {

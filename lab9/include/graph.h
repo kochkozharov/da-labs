@@ -93,6 +93,7 @@ public:
 
     void AddEdge(size_t u, size_t v, long long weight) {
         adjList[u].emplace_back(v, weight);
+        adjMatrix[u][v] = weight; 
     }
 
     std::optional<std::vector<std::vector<long long>>> Johnson() {
@@ -119,7 +120,7 @@ public:
         return res;
     }
 
-    std::vector<std::vector<long long>> FloydWarshall() {
+    std::optional<std::vector<std::vector<long long>>> FloydWarshall() {
         size_t n = adjList.size();
         auto distance = adjMatrix;
 
@@ -132,6 +133,12 @@ public:
                         distance[i][j] = distance[i][k] + distance[k][j];
                     }
                 }
+            }
+        }
+
+        for (size_t i = 1; i < n; ++i) {
+            if (distance[i][i] < 0) {
+                return std::nullopt;
             }
         }
 

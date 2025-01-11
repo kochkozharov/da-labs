@@ -6,7 +6,6 @@
 
 class Graph {
 private:
-
     struct adjListElem {
         size_t adjNode;
         long long weight;
@@ -18,6 +17,7 @@ private:
     };
 
     std::vector<std::vector<adjListElem>> adjList;
+    std::vector<std::vector<long long>> adjMatrix;
 
     std::vector<long long> Dijkstra(size_t u) {
         size_t n = adjList.size();
@@ -75,9 +75,18 @@ private:
     }
 
 public:
+    Graph(size_t verticesCount) : adjList(verticesCount + 1), adjMatrix(
+            verticesCount+1,
+            std::vector<long long>(verticesCount+1, std::numeric_limits<long long>::max())) {
 
-    Graph(size_t verticesCount) : adjList(verticesCount + 1) {
         for (size_t i = 1; i < verticesCount+1; ++i) {
+            adjMatrix[i][i] = 0;
+            for (const auto &edge : adjList[i]) {
+                adjMatrix[i][edge.adjNode] = edge.weight;
+            }
+        }
+
+        for (size_t i = 1; i < verticesCount + 1; ++i) {
             adjList[0].emplace_back(i, 0);
         }
     }
@@ -98,15 +107,35 @@ public:
                     el.weight = el.weight + (*potentials)[u] - (*potentials)[v];
             }
         }
-        std::vector<std::vector<long long>> res(adjList.size(), std::vector<long long>(adjList.size()));
+        std::vector<std::vector<long long>> res(
+            adjList.size(), std::vector<long long>(adjList.size()));
         for (size_t i = 1; i < adjList.size(); ++i) {
             res[i] = Dijkstra(i);
             for (size_t j = 1; j < res[i].size(); ++j) {
                 if (res[i][j] != std::numeric_limits<long long>::max())
-                    res[i][j] =  res[i][j] + (*potentials)[j] - (*potentials)[i];
+                    res[i][j] = res[i][j] + (*potentials)[j] - (*potentials)[i];
             }
         }
         return res;
+    }
+
+    std::vector<std::vector<long long>> FloydWarshall() {
+        size_t n = adjList.size();
+        auto distance = adjMatrix;
+
+        for (size_t k = 1; k < n; ++k) {
+            for (size_t i = 1; i < n; ++i) {
+                for (size_t j = 1; j < n; ++j) {
+                    if (distance[i][k] != std::numeric_limits<long long>::max() &&
+                        distance[k][j] != std::numeric_limits<long long>::max() &&
+                        distance[i][j] > distance[i][k] + distance[k][j]) {
+                        distance[i][j] = distance[i][k] + distance[k][j];
+                    }
+                }
+            }
+        }
+
+        return distance;
     }
 
     Graph() = delete;

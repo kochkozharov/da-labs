@@ -85,9 +85,6 @@ public:
         //prepare adjMatrix
         for (size_t i = 1; i < verticesCount+1; ++i) {
             adjMatrix[i][i] = 0;
-            for (const auto &edge : adjList[i]) {
-                adjMatrix[i][edge.adjNode] = edge.weight;
-            }
         }
     }
 

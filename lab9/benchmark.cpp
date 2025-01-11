@@ -1,6 +1,7 @@
 #include <chrono>
 #include <random>
 #include <iostream>
+#include <set>
 #include "graph.h"
 
 int main(int argc, char* argv[]) {
@@ -15,15 +16,21 @@ int main(int argc, char* argv[]) {
 
     Graph graph(n);
 
-    std::mt19937 rng(42);
+    std::random_device rd;
+    std::mt19937 gen(rd());
     std::uniform_int_distribution<size_t> nodeDist(1, n);
     std::uniform_int_distribution<long long> weightDist(0, 1000);
 
-    for (size_t i = 0; i < m; ++i) {
-        size_t u = nodeDist(rng);
-        size_t v = nodeDist(rng);
-        long long w = weightDist(rng);
-        graph.AddEdge(u, v, w);
+    std::set<std::pair<size_t, size_t>> edges;
+
+    while (edges.size() < m) {
+        size_t u = nodeDist(gen);
+        size_t v = nodeDist(gen);
+        if (u != v && edges.find({u, v}) == edges.end() && edges.find({v, u}) == edges.end()) {
+            long long weight = weightDist(gen);
+            graph.AddEdge(u, v, weight);
+            edges.insert({u, v});
+        }
     }
 
     auto start = std::chrono::high_resolution_clock::now();

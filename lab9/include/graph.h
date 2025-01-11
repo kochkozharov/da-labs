@@ -78,16 +78,16 @@ public:
     Graph(size_t verticesCount) : adjList(verticesCount + 1), adjMatrix(
             verticesCount+1,
             std::vector<long long>(verticesCount+1, std::numeric_limits<long long>::max())) {
-
+        //prepare adjList
+        for (size_t i = 1; i < verticesCount + 1; ++i) {
+            adjList[0].emplace_back(i, 0);
+        }
+        //prepare adjMatrix
         for (size_t i = 1; i < verticesCount+1; ++i) {
             adjMatrix[i][i] = 0;
             for (const auto &edge : adjList[i]) {
                 adjMatrix[i][edge.adjNode] = edge.weight;
             }
-        }
-
-        for (size_t i = 1; i < verticesCount + 1; ++i) {
-            adjList[0].emplace_back(i, 0);
         }
     }
 

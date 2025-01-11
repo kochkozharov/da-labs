@@ -9,14 +9,13 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // Convert command line arguments to size_t
     size_t n = std::strtoull(argv[1], nullptr, 10);
     size_t m = std::strtoull(argv[2], nullptr, 10);
 
 
     Graph graph(n);
 
-    std::mt19937 rng(42);  // Fixed seed for reproducibility
+    std::mt19937 rng(42);
     std::uniform_int_distribution<size_t> nodeDist(1, n);
     std::uniform_int_distribution<long long> weightDist(0, 1000);
 
